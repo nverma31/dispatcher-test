@@ -104,7 +104,7 @@ export function CreateTripPage({ passenger, onBack, onSave }: CreateTripPageProp
   };
 
   return (
-    <div className="min-h-screen bg-[var(--color-surface)] py-8">
+    <div className="min-h-screen bg-[var(--background)] py-8">
       <div className="max-w-[760px] mx-auto px-8">
         {/* Back Button */}
         <button
@@ -143,16 +143,18 @@ export function CreateTripPage({ passenger, onBack, onSave }: CreateTripPageProp
 
             <div className="space-y-4">
               <AddressLookupField
+                id="pickup"
                 label="Abholung"
-                value={formData.pickup}
-                onChange={(value) => setFormData({ ...formData, pickup: value })}
+                value={formData.pickup ? { address: formData.pickup, coordinates: { lat: 0, lng: 0 } } : null}
+                onChange={(loc) => setFormData({ ...formData, pickup: loc?.address || '' })}
                 placeholder=""
               />
 
               <AddressLookupField
+                id="dropoff"
                 label="Ziel"
-                value={formData.dropoff}
-                onChange={(value) => setFormData({ ...formData, dropoff: value })}
+                value={formData.dropoff ? { address: formData.dropoff, coordinates: { lat: 0, lng: 0 } } : null}
+                onChange={(loc) => setFormData({ ...formData, dropoff: loc?.address || '' })}
                 placeholder=""
               />
             </div>

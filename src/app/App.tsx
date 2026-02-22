@@ -11,15 +11,17 @@ import { RecurrentTripDashboard } from '@/features/recurring/screens/RecurrentTr
 import { RecurrentTripDetailsScreen } from '@/features/recurring/screens/RecurrentTripDetailsScreen';
 import { AddTripToRecurrentPage } from '@/features/booking/screens/AddTripToRecurrentPage';
 import { CreateTripPage } from '@/features/booking/screens/CreateTripPage';
+import { AccountScreen } from '@/features/account/screens/AccountScreen';
 import { BookingDetailsOverlay } from '@/features/booking/components/BookingDetailsOverlay';
 import { Toaster } from '@/components/ds/sonner';
 import { toast } from 'sonner@2.0.3';
-import type { Trip, Passenger, BookingData, LocationData, RecurrentTrip } from '@/types';
+import type { Trip, Passenger, BookingData, LocationData, RecurrentTrip, UserProfile } from '@/types';
+import { generateTripsFromRecurrent } from '@/features/recurring/services/tripGenerator';
 // Note: Types seem to be defined IN App.tsx in the original file, I need to check where they are.
 // If they are exported from App.tsx, then importing from @/app/App is correct.
 
 // Re-export for backward compatibility
-export type { Trip, Passenger, BookingData, LocationData, RecurrentTrip };
+export type { Trip, Passenger, BookingData, LocationData, RecurrentTrip, UserProfile };
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<'dispatch' | 'passengers' | 'passenger-details' | 'recurrent-trip' | 'recurrent-trip-details' | 'add-adhoc-trip' | 'create-trip' | 'settings'>('dispatch');
@@ -28,6 +30,14 @@ export default function App() {
   const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
   const [selectedPassenger, setSelectedPassenger] = useState<Passenger | null>(null);
   const [selectedRecurrentTrip, setSelectedRecurrentTrip] = useState<RecurrentTrip | null>(null);
+  const [currentUser, setCurrentUser] = useState<UserProfile>({
+    id: 'u1',
+    firstName: 'John',
+    lastName: 'Smith',
+    email: 'john.smith@free-now.com',
+    phone: '+49 123 456789',
+    language: 'Deutsch'
+  });
   const [recurrentTrips, setRecurrentTrips] = useState<RecurrentTrip[]>([
     {
       id: 'rt1',
@@ -129,6 +139,7 @@ export default function App() {
     {
       id: '1',
       time: '14:30',
+      date: '13/09/2025',
       status: 'Completed',
       statusColor: 'bg-green-500 text-white',
       driverId: '1008',
@@ -142,6 +153,7 @@ export default function App() {
     {
       id: '2',
       time: '15:45',
+      date: '13/09/2025',
       status: 'In Progress',
       statusColor: 'bg-blue-500 text-white',
       driverId: '1009',
@@ -156,6 +168,7 @@ export default function App() {
     {
       id: '3',
       time: '16:00',
+      date: '14/09/2025',
       status: 'Completed',
       statusColor: 'bg-yellow-500 text-white',
       driverId: '1010',
@@ -169,6 +182,7 @@ export default function App() {
     {
       id: '4',
       time: '09:15',
+      date: '14/09/2025',
       status: 'Completed',
       statusColor: 'bg-green-500 text-white',
       driverId: 'D045',
@@ -182,6 +196,7 @@ export default function App() {
     {
       id: '5',
       time: '10:30',
+      date: '15/09/2025',
       status: 'Pending',
       statusColor: 'bg-yellow-500 text-white',
       driverId: 'D025',
@@ -295,19 +310,36 @@ export default function App() {
   const addRecurrentTrip = (tripData: RecurrentTrip) => {
     setRecurrentTrips(prev => [tripData, ...prev]);
 
-    // Update passenger to show they have recurrent trips
-    setPassengers(prev =>
-      prev.map(p => p.id === tripData.passengerId
-        ? { ...p, recurrentTrips: 'Ja', totalTrips: (p.totalTrips || 0) + 1 }
-        : p
-      )
-    );
+    const passenger = passengers.find(p => p.id === tripData.passengerId);
+    if (passenger) {
+      // Generate individual trips
+      const generatedTrips = generateTripsFromRecurrent(
+        tripData,
+        trips,
+        30, // 30 days lookahead
+        passenger.name,
+        passenger.phone
+      );
+
+      if (generatedTrips.length > 0) {
+        setTrips(prev => [...generatedTrips, ...prev]);
+        toast.success(`${generatedTrips.length} Einzelfahrten wurden generiert`);
+      }
+
+      // Update passenger to show they have recurrent trips
+      setPassengers(prev =>
+        prev.map(p => p.id === tripData.passengerId
+          ? { ...p, recurrentTrips: 'Ja', totalTrips: (p.totalTrips || 0) + generatedTrips.length }
+          : p
+        )
+      );
+    }
 
     toast.success('Wiederkehrende Fahrt erfolgreich erstellt');
   };
 
   return (
-    <div className="min-h-screen bg-[var(--color-surface)] flex">
+    <div className="min-h-screen flex" style={{ backgroundColor: 'var(--color-sys-background)' }}>
       <Toaster />
       {/* Fixed Sidebar */}
       <div className="hidden lg:block fixed left-0 top-0 h-screen z-40">
@@ -336,15 +368,25 @@ export default function App() {
               />
             </div>
 
-            {/* Trip List */}
-            <TripTable trips={trips} onTripClick={setSelectedTrip} />
+            {/* Trip List — white card matching Figma "Dispatch Trip list" frame */}
+            <div
+              style={{
+                backgroundColor: 'var(--color-sys-surface)',
+                borderRadius: 'var(--radius-lg)',
+                padding: '32px',
+                marginTop: '24px',
+              }}
+            >
+              <TripTable trips={trips} onTripClick={setSelectedTrip} />
+            </div>
+
           </div>
         )}
 
         {currentPage === 'passengers' && (
           <div className="min-h-screen">
             <PassengersListScreen
-              className="bg-[var(--color-surface-highest)] relative lg:rounded-[var(--radius-card)] size-full"
+              className="bg-[var(--color-background)] relative lg:rounded-[var(--radius-card)] size-full"
               passengers={passengers}
               onUpdatePassenger={(id, updatedData) => {
                 setPassengers(prev =>
@@ -355,9 +397,17 @@ export default function App() {
                 setCurrentPage('passengers');
               }}
               onDeletePassenger={(id) => {
-                setPassengers(prev => prev.filter(p => p.id !== id));
+                const hasTrips = trips.some(t => t.passengerId === id);
+                if (hasTrips) {
+                  toast.error('Deletion not allowed', {
+                    description: 'This passenger has an active trip history and cannot be deleted for data integrity reasons.'
+                  });
+                } else if (confirm('Möchten Sie diesen Fahrgast wirklich löschen?')) {
+                  setPassengers(prev => prev.filter(p => p.id !== id));
+                  toast.success('Fahrgast gelöscht');
+                }
               }}
-              onEditPassenger={(id) => {
+              onEditPassenger={(id: string) => {
                 const passenger = passengers.find(p => p.id === id);
                 if (passenger) {
                   setSelectedPassenger(passenger);
@@ -378,7 +428,7 @@ export default function App() {
                 setSelectedPassenger(null);
                 setCurrentPage('passengers');
               }}
-              onSave={(updatedData) => {
+              onSave={(updatedData: Partial<Passenger>) => {
                 setPassengers(prev =>
                   prev.map(p => p.id === selectedPassenger.id ? { ...p, ...updatedData } : p)
                 );
@@ -392,9 +442,23 @@ export default function App() {
               onCreateRecurrentTrip={() => {
                 setCurrentPage('recurrent-trip');
               }}
-              onEditRecurrentTrip={(recurrentTrip) => {
+              onEditRecurrentTrip={(recurrentTrip: RecurrentTrip) => {
                 setSelectedRecurrentTrip(recurrentTrip);
                 setCurrentPage('recurrent-trip-details');
+              }}
+              onDelete={() => {
+                const id = selectedPassenger.id;
+                const hasTrips = trips.some(t => t.passengerId === id);
+                if (hasTrips) {
+                  toast.error('Deletion not allowed', {
+                    description: 'This passenger has an active trip history and cannot be deleted for data integrity reasons.'
+                  });
+                } else if (confirm('Möchten Sie diesen Fahrgast wirklich löschen?')) {
+                  setPassengers(prev => prev.filter(p => p.id !== id));
+                  setSelectedPassenger(null);
+                  setCurrentPage('passengers');
+                  toast.success('Fahrgast gelöscht');
+                }
               }}
             />
           </div>
@@ -411,7 +475,7 @@ export default function App() {
                   setCurrentPage('dispatch');
                 }
               }}
-              onSave={(tripData, passengerData) => {
+              onSave={(tripData: RecurrentTrip, passengerData?: any) => {
                 // Find or create passenger if not already selected
                 let targetPassenger = selectedPassenger;
 
@@ -465,10 +529,25 @@ export default function App() {
                 setSelectedRecurrentTrip(null);
                 setCurrentPage('passenger-details');
               }}
-              onSave={(updatedTrip) => {
+              onSave={(updatedTrip: RecurrentTrip) => {
                 setRecurrentTrips(prev =>
                   prev.map(rt => rt.id === updatedTrip.id ? updatedTrip : rt)
                 );
+
+                // Regenerate trips for this updated recurrent trip
+                const generatedTrips = generateTripsFromRecurrent(
+                  updatedTrip,
+                  trips,
+                  30,
+                  selectedPassenger.name,
+                  selectedPassenger.phone
+                );
+
+                if (generatedTrips.length > 0) {
+                  setTrips(prev => [...generatedTrips, ...prev]);
+                  toast.success(`${generatedTrips.length} neue Einzelfahrten wurden generiert`);
+                }
+
                 toast.success('Wiederkehrende Fahrt erfolgreich aktualisiert');
                 setSelectedRecurrentTrip(null);
                 setCurrentPage('passenger-details');
@@ -487,7 +566,7 @@ export default function App() {
               onBack={() => {
                 setCurrentPage('recurrent-trip-details');
               }}
-              onSave={(tripData) => {
+              onSave={(tripData: any) => {
                 const newTrip: Trip = {
                   id: `trip-${Date.now()}`,
                   time: tripData.time || '',
@@ -529,7 +608,7 @@ export default function App() {
               onBack={() => {
                 setCurrentPage('passenger-details');
               }}
-              onSave={(tripData) => {
+              onSave={(tripData: any) => {
                 const newTrip: Trip = {
                   id: Date.now().toString(),
                   time: tripData.time,
@@ -564,11 +643,17 @@ export default function App() {
         )}
 
         {currentPage === 'settings' && (
-          <div className="min-h-screen p-4 md:p-6 lg:p-10">
-            <h1>Einstellungen</h1>
-            <p>Einstellungsseite kommt bald...</p>
+          <div className="min-h-screen">
+            <AccountScreen
+              user={currentUser}
+              onSave={(updatedData: Partial<UserProfile>) => {
+                setCurrentUser(prev => ({ ...prev, ...updatedData }));
+                toast.success('Profil erfolgreich aktualisiert');
+              }}
+            />
           </div>
         )}
+        {/* In a real app, logic to clear auth would go here */}
 
         {/* Booking Details Overlay */}
         {selectedTrip && (

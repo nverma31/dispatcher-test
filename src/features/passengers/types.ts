@@ -9,6 +9,11 @@ export interface Passenger {
     purpose: string;
     status: 'Fehlende Informationen' | 'Vollständig';
     email?: string;
+    dateOfBirth?: string;
+    homeAddress?: string;
+    notes?: string;
+    insuranceCompany?: string;
+    patientNumber?: string;
     totalTrips?: number;
     lastTripDate?: string;
 }

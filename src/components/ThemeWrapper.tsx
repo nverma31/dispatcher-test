@@ -3,6 +3,7 @@ import { ThemeProvider } from 'styled-components';
 import { experimental } from '@freenow/wave';
 import { useTheme } from 'next-themes';
 import { createGlobalStyle as createStyledGlobalStyle } from 'styled-components';
+import { ModernColors } from '@freenow/wave';
 
 const { createGlobalStyle: createWaveGlobalStyle, theme, ColorPalette, darkTheme } = experimental;
 
@@ -37,6 +38,7 @@ export const ThemeWrapper: React.FC<{ children: React.ReactNode }> = ({ children
 
   return (
     <ThemeProvider theme={theme}>
+      <ModernColors />
       <WaveGlobalStyles />
       {isDark && <DarkThemeGlobal />}
       {children}

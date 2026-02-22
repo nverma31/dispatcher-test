@@ -1,23 +1,26 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { MapPin } from 'lucide-react';
 import { experimental } from '@freenow/wave';
 import { LocationData } from '@/types';
 
 const { ComboBox, ListBoxItem } = experimental;
 
+const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'AIzaSyBP0l1p4SS65c9tAz_4jGNcw1_jX15nNwE';
+
 interface AddressLookupFieldProps {
   id: string;
   label: string;
-  placeholder: string;
+
   value: LocationData | null;
   onChange: (location: LocationData | null) => void;
   error?: string;
   icon?: React.ReactNode;
 }
 
-interface PlacePrediction {
-  description: string;
+interface PlacePrediction extends Record<string, unknown> {
+  id: string;
   place_id: string;
+  description: string;
   structured_formatting?: {
     main_text?: string;
     secondary_text?: string;
@@ -27,7 +30,6 @@ interface PlacePrediction {
 export function AddressLookupField({
   id,
   label,
-  placeholder,
   value,
   onChange,
   error,
@@ -43,56 +45,67 @@ export function AddressLookupField({
     }
   }, [value?.address]);
 
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   // Handle input changes and fetch predictions
-  const handleInputChange = async (newValue: string) => {
+  const handleInputChange = (newValue: string) => {
     setInputValue(newValue);
 
     if (newValue.length > 2) {
-      try {
-        const response = await fetch(
-          `https://places.googleapis.com/v1/places:searchText`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Goog-Api-Key': import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
-              'X-Goog-FieldMask': 'places.displayName,places.formattedAddress,places.location,places.id'
-            },
-            body: JSON.stringify({
-              textQuery: newValue,
-              regionCode: 'DE',
-              maxResultCount: 5
-            })
-          }
-        );
-
-        if (!response.ok) {
-          // Silent fail or console warn
-          console.warn('Places API error');
-          setPredictions([]);
-          return;
-        }
-
-        const data = await response.json();
-
-        if (data.places && data.places.length > 0) {
-          const convertedPredictions: PlacePrediction[] = data.places.map((place: any, index: number) => ({
-            description: place.formattedAddress || place.displayName?.text || newValue,
-            place_id: place.id || `temp_${Date.now()}_${index}`,
-            structured_formatting: {
-              main_text: place.displayName?.text || place.formattedAddress || newValue,
-              secondary_text: place.formattedAddress !== place.displayName?.text ? place.formattedAddress : ''
-            }
-          }));
-
-          setPredictions(convertedPredictions);
-        } else {
-          setPredictions([]);
-        }
-      } catch (error) {
-        console.warn('Places API failed:', error);
-        setPredictions([]);
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
       }
+
+      debounceTimerRef.current = setTimeout(async () => {
+        try {
+          const response = await fetch(
+            `https://places.googleapis.com/v1/places:autocomplete`,
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Goog-Api-Key': GOOGLE_MAPS_API_KEY
+              },
+              body: JSON.stringify({
+                input: newValue,
+                includedRegionCodes: ['DE']
+              })
+            }
+          );
+
+          if (!response.ok) {
+            console.warn('Places API error');
+            setPredictions([]);
+            return;
+          }
+
+          const data = await response.json();
+
+          if (data.suggestions && data.suggestions.length > 0) {
+            const convertedPredictions: PlacePrediction[] = data.suggestions
+              .filter((s: any) => s.placePrediction)
+              .map((s: any, index: number) => {
+                const p = s.placePrediction;
+                return {
+                  id: `${id}_${p.placeId || `temp_${Date.now()}_${index}`}`,
+                  place_id: p.placeId,
+                  description: p.text?.text || newValue,
+                  structured_formatting: {
+                    main_text: p.structuredFormat?.mainText?.text || p.text?.text || newValue,
+                    secondary_text: p.structuredFormat?.secondaryText?.text || ''
+                  }
+                };
+              });
+
+            setPredictions(convertedPredictions);
+          } else {
+            setPredictions([]);
+          }
+        } catch (error) {
+          console.warn('Places API failed:', error);
+          setPredictions([]);
+        }
+      }, 300); // 300ms debounce
     } else {
       setPredictions([]);
     }
@@ -113,10 +126,14 @@ export function AddressLookupField({
     const displayText = prediction.description;
     setInputValue(displayText);
 
-    // Geocode to get coordinates
+    // Geocode to get coordinates, preferring place_id if available
     try {
+      const queryParam = prediction.place_id
+        ? `place_id=${prediction.place_id}`
+        : `address=${encodeURIComponent(displayText)}`;
+
       const response = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(displayText)}&key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}`
+        `https://maps.googleapis.com/maps/api/geocode/json?${queryParam}&key=${GOOGLE_MAPS_API_KEY}`
       );
 
       if (!response.ok) throw new Error('Geocoding error');
@@ -152,16 +169,16 @@ export function AddressLookupField({
   return (
     <ComboBox
       label={label}
-      placeholder={placeholder}
+      placeholder=""
       inputValue={inputValue}
       onInputChange={handleInputChange}
       onSelectionChange={handleSelectionChange}
-      items={predictions}
+      allowsCustomValue={true}
       leadingIcon={icon}
       errorMessage={error}
     >
-      {(item: PlacePrediction) => (
-        <ListBoxItem key={item.place_id} id={item.place_id} textValue={item.description}>
+      {predictions.map((item) => (
+        <ListBoxItem key={item.id as string} id={item.id as string} textValue={item.description as string}>
           <div className="flex flex-col">
             <span className="font-medium text-sm">{item.structured_formatting?.main_text || item.description}</span>
             {item.structured_formatting?.secondary_text && (
@@ -169,7 +186,7 @@ export function AddressLookupField({
             )}
           </div>
         </ListBoxItem>
-      )}
+      ))}
     </ComboBox>
   );
 }

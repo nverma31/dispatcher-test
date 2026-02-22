@@ -7,3 +7,13 @@ export interface LocationData {
         lng: number;
     };
 }
+
+export interface UserProfile {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    language: string;
+}
+

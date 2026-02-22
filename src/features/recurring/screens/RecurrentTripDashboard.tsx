@@ -78,9 +78,9 @@ export function RecurrentTripDashboard({
     startDate: "17/06/2025",
     endDate: "30/12/2025",
     frequencyNumber: "01",
-    selectedDays: [1, 4], // Tuesday and Friday indices
-    pickupTimes: { 1: "09:00", 4: "09:00" }, // times for selected days
-    returnTimes: { 1: "11:30", 4: "11:30" },
+    selectedDays: [1, 4] as number[], // Tuesday and Friday indices
+    pickupTimes: { 1: "09:00", 4: "09:00" } as { [key: number]: string }, // times for selected days
+    returnTimes: { 1: "11:30", 4: "11:30" } as { [key: number]: string },
   });
 
   // Recurrence tab state
@@ -185,6 +185,8 @@ export function RecurrentTripDashboard({
       daysOfWeek: formData.selectedDays,
       pickupTimes: formData.pickupTimes,
       returnTimes: formData.returnTimes,
+      specificDates: selectedSpecificDates.map((d: Date) => d.toISOString()),
+      specificDateTimes: specificDateTimes,
       insuranceCompany: formData.insuranceCompany,
       patientNumber: formData.patientNumber,
     };
@@ -200,7 +202,7 @@ export function RecurrentTripDashboard({
   };
 
   return (
-    <div className="min-h-screen bg-[var(--color-surface)]">
+    <div className="min-h-screen bg-[var(--background)]">
       <div className="p-4 md:p-6 lg:p-10 flex flex-col items-center">
         {/* Back Button */}
         <div className="w-full max-w-[800px] mb-6">
@@ -230,7 +232,7 @@ export function RecurrentTripDashboard({
                 label="Typ"
                 value={formData.purpose}
                 options={purposeOptions}
-                onChange={(value) =>
+                onChange={(value: string) =>
                   setFormData({ ...formData, purpose: value })
                 }
               />
@@ -584,7 +586,7 @@ export function RecurrentTripDashboard({
                           <p className="text-[16px] leading-[24px] text-[#1e1a1a] text-center">
                             {
                               monthNames[
-                                displayMonth.getMonth()
+                              displayMonth.getMonth()
                               ]
                             }{" "}
                             {displayMonth.getFullYear()}
@@ -632,9 +634,9 @@ export function RecurrentTripDashboard({
                                 (d) =>
                                   d.getDate() === day &&
                                   d.getMonth() ===
-                                    displayMonth.getMonth() &&
+                                  displayMonth.getMonth() &&
                                   d.getFullYear() ===
-                                    displayMonth.getFullYear(),
+                                  displayMonth.getFullYear(),
                               );
 
                             return (
@@ -647,11 +649,11 @@ export function RecurrentTripDashboard({
                                         (d) =>
                                           !(
                                             d.getDate() ===
-                                              day &&
+                                            day &&
                                             d.getMonth() ===
-                                              displayMonth.getMonth() &&
+                                            displayMonth.getMonth() &&
                                             d.getFullYear() ===
-                                              displayMonth.getFullYear()
+                                            displayMonth.getFullYear()
                                           ),
                                       ),
                                     );
@@ -782,7 +784,7 @@ export function RecurrentTripDashboard({
                                   ...specificDateTimes,
                                   [dateKey]: {
                                     ...specificDateTimes[
-                                      dateKey
+                                    dateKey
                                     ],
                                     pickup: value,
                                   },
@@ -804,7 +806,7 @@ export function RecurrentTripDashboard({
                                   ...specificDateTimes,
                                   [dateKey]: {
                                     ...specificDateTimes[
-                                      dateKey
+                                    dateKey
                                     ],
                                     return: value,
                                   },
@@ -882,11 +884,10 @@ export function RecurrentTripDashboard({
                     <button
                       key={index}
                       onClick={() => toggleDay(index)}
-                      className={`box-border content-stretch flex gap-[12px] h-[40px] items-center justify-center overflow-clip px-[24px] py-[16px] relative rounded-[12px] shrink-0 w-[64px] transition-colors ${
-                        formData.selectedDays.includes(index)
-                          ? "bg-[#e80046] text-white"
-                          : "bg-[#f1f1f1] text-[#1b1b1b]"
-                      }`}
+                      className={`box-border content-stretch flex gap-[12px] h-[40px] items-center justify-center overflow-clip px-[24px] py-[16px] relative rounded-[12px] shrink-0 w-[64px] transition-colors ${formData.selectedDays.includes(index)
+                        ? "bg-[#e80046] text-white"
+                        : "bg-[#f1f1f1] text-[#1b1b1b]"
+                        }`}
                     >
                       <span className="text-[16px]">
                         {day.short}

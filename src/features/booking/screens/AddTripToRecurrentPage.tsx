@@ -95,7 +95,7 @@ export function AddTripToRecurrentPage({
   };
 
   return (
-    <div className="min-h-screen bg-[var(--color-surface)] p-4 md:p-6 lg:p-10">
+    <div className="min-h-screen bg-[var(--background)] p-4 md:p-6 lg:p-10">
       <div className="max-w-[1440px] mx-auto">
         {/* Back Navigation */}
         <button

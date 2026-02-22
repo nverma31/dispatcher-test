@@ -6,6 +6,8 @@ import {
   Trash2,
   Phone,
   RotateCcw,
+  Search,
+  X,
 } from "lucide-react";
 import { TextField } from "@/components/ds/text-field";
 import { SelectField, SelectOption } from "@/components/ds/select-field";
@@ -26,6 +28,7 @@ interface PassengerDetailScreenProps {
   onCreateTrip?: () => void;
   onCreateRecurrentTrip?: () => void;
   onEditRecurrentTrip?: (recurrentTrip: RecurrentTrip) => void;
+  onDelete?: () => void;
 }
 
 export function PassengerDetailScreen({
@@ -37,21 +40,24 @@ export function PassengerDetailScreen({
   onCreateTrip,
   onCreateRecurrentTrip,
   onEditRecurrentTrip,
+  onDelete,
 }: PassengerDetailScreenProps) {
   const [formData, setFormData] = useState({
     firstName: passenger.name.split(" ")[0] || "",
     lastName:
       passenger.name.split(" ").slice(1).join(" ") || "",
-    dateOfBirth: "20/05/1998",
+    dateOfBirth: passenger.dateOfBirth || "20/05/1998",
     phone: passenger.phone,
-    email: "david@free-now.com",
-    homeAddress:
-      "Berlin Wall Memorial, Bernauer Straße, Berlin, Germany",
-    notes: "",
-    insuranceCompany: "Sanitas",
-    patientNumber: "1212121",
+    email: passenger.email || "david@free-now.com",
+    homeAddress: passenger.homeAddress || "Berlin Wall Memorial, Bernauer Straße, Berlin, Germany",
+    notes: passenger.notes || "",
+    insuranceCompany: passenger.insuranceCompany || "Sanitas",
+    patientNumber: passenger.patientNumber || "1212121",
     purpose: passenger.purpose,
   });
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeFilter, setActiveFilter] = useState<string | null>(null);
 
   const insuranceOptions: SelectOption[] = [
     { value: "sanitas", label: "Sanitas" },
@@ -83,13 +89,26 @@ export function PassengerDetailScreen({
   const prebookedTrips = passengerTrips.filter(
     (t) => t.status === "Pending",
   ).length;
-  const cancelledTrips = 4; // Mock data
+  const cancelledTrips = passengerTrips.filter(
+    (t) => t.status === "Cancelled",
+  ).length;
   const completedTrips = passengerTrips.filter(
     (t) => t.status === "Completed",
   ).length;
 
+  const filteredItems = passengerTrips.filter((trip) => {
+    const matchesSearch =
+      trip.pickup.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      trip.dropoff.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      trip.driverId.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesFilter = !activeFilter || trip.status === activeFilter;
+
+    return matchesSearch && matchesFilter;
+  });
+
   return (
-    <div className="min-h-screen bg-[var(--color-surface)] pb-20 lg:pb-10">
+    <div className="min-h-screen bg-[var(--background)] pb-20 lg:pb-10">
       <div className="p-4 md:p-6 lg:p-10">
         {/* Back Button */}
         <button
@@ -102,9 +121,9 @@ export function PassengerDetailScreen({
           </span>
         </button>
 
-        <div className="flex gap-6 items-start">
+        <div className="flex flex-col lg:flex-row gap-6 items-start">
           {/* Left Column - Passenger Account Form */}
-          <div className="bg-[var(--color-surface-highest)] rounded-[24px] p-6 max-w-[688px] min-w-[688px]">
+          <div className="bg-[var(--surface)] border border-black/5 shadow-sm rounded-[24px] p-6 w-full lg:max-w-[688px] lg:min-w-[688px]">
             <h1 className="text-[28px] mb-6">
               Fahrgastkonto
             </h1>
@@ -159,7 +178,7 @@ export function PassengerDetailScreen({
                   <TextField
                     label="Hidden"
                     value=""
-                    onChange={() => {}}
+                    onChange={() => { }}
                   />
                 </div>
               </div>
@@ -257,6 +276,13 @@ export function PassengerDetailScreen({
             {/* Action Buttons */}
             <div className="flex gap-8 justify-end">
               <button
+                onClick={onDelete}
+                className="bg-white border border-[#e2e2e2] h-14 px-6 rounded-[var(--radius)] hover:bg-red-50 hover:border-red-200 transition-colors flex items-center justify-center gap-2 mr-auto"
+              >
+                <Trash2 className="size-5 text-red-500" />
+                <span className="text-[16px] text-red-500 font-medium">Löschen</span>
+              </button>
+              <button
                 onClick={handleCancel}
                 className="bg-[#f1f1f1] h-14 px-6 rounded-[var(--radius)] hover:bg-[var(--color-surface-variant)] transition-colors"
               >
@@ -274,29 +300,25 @@ export function PassengerDetailScreen({
           </div>
 
           {/* Right Column - Trips */}
-          <div className="flex-1 flex flex-col gap-6">
+          <div className="flex-1 flex flex-col gap-6 w-full">
             {/* Recurrent Trips */}
-            <div className="bg-[var(--color-surface-highest)] rounded-[24px] p-6 h-[512px]">
+            <div className="bg-[var(--surface)] border border-black/5 shadow-sm rounded-[24px] p-6 h-[512px] overflow-hidden flex flex-col">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-[28px]"> Trips</h2>
+                <h2 className="text-[24px] font-semibold">Trips</h2>
                 <div className="flex items-center gap-3">
                   <button
                     onClick={onCreateTrip}
-                    className="bg-[#f1f1f1] h-14 px-6 rounded-[var(--radius)] flex items-center gap-2 hover:bg-[var(--color-surface-variant)] transition-colors"
+                    className="bg-[#f1efef] h-12 px-4 rounded-[12px] flex items-center gap-2 hover:bg-[#e2e2e2] transition-colors"
                   >
                     <Calendar className="size-5" />
-                    <span className="text-[16px]">
-                      Neuer Trip
-                    </span>
+                    <span className="text-[14px] font-medium">Neuer Trip</span>
                   </button>
                   <button
                     onClick={onCreateRecurrentTrip}
-                    className="bg-[#f1f1f1] h-14 px-6 rounded-[var(--radius)] flex items-center gap-2 hover:bg-[var(--color-surface-variant)] transition-colors"
+                    className="bg-[#f1efef] h-12 px-4 rounded-[12px] flex items-center gap-2 hover:bg-[#e2e2e2] transition-colors"
                   >
                     <RotateCcw className="size-5" />
-                    <span className="text-[16px]">
-                      Neuer wiederkehrender Trip
-                    </span>
+                    <span className="text-[14px] font-medium">Wiederkehrend</span>
                   </button>
                 </div>
               </div>
@@ -322,26 +344,21 @@ export function PassengerDetailScreen({
                 </div>
               </div>
 
-              {/* Trips Table - Shows both recurrent and one-time trips */}
-              <div className="overflow-x-auto">
+              {/* Trips Table Header */}
+              <div className="overflow-y-auto flex-1">
                 <div className="min-w-full">
-                  {/* Table Header */}
-                  <div className="flex gap-2 h-12 items-center border-b border-[#e2e2e2]">
+                  <div className="flex gap-2 h-10 items-center border-b border-[#e2e2e2] bg-[#fcfcfc] sticky top-0 z-10">
                     <div className="flex-1 px-4">
-                      <p className="text-[16px]">Titel der Fahrt</p>
+                      <p className="text-[14px] font-medium text-muted-foreground uppercase tracking-wider">Titel</p>
+                    </div>
+                    <div className="w-[120px] px-4">
+                      <p className="text-[14px] font-medium text-muted-foreground uppercase tracking-wider">Typ</p>
                     </div>
                     <div className="w-[144px] px-4">
-                      <p className="text-[16px]">
-                        Typ
-                      </p>
+                      <p className="text-[14px] font-medium text-muted-foreground uppercase tracking-wider">Zeitplan</p>
                     </div>
-                    <div className="w-[144px] px-4">
-                      <p className="text-[16px]">
-                        Zeitplan
-                      </p>
-                    </div>
-                    <div className="w-[104px] px-4">
-                      <p className="text-[16px]">Aktionen</p>
+                    <div className="w-[80px] px-4 text-right">
+                      <p className="text-[14px] font-medium text-muted-foreground uppercase tracking-wider">Aktion</p>
                     </div>
                   </div>
 
@@ -406,7 +423,7 @@ export function PassengerDetailScreen({
                     .map((trip, index) => {
                       const displayTitle = trip.tripTitle || `${trip.pickup} → ${trip.dropoff}`;
                       const tripTypeLabel = trip.tripType === 'krankenfahrten' ? 'Krankenfahrten' : trip.tripType || '-';
-                      
+
                       return (
                         <div
                           key={trip.id}
@@ -442,152 +459,124 @@ export function PassengerDetailScreen({
               </div>
             </div>
 
-            {/* Trips Activity */}
-            <div className="bg-[var(--color-surface-highest)] rounded-[24px] p-6 h-[600px]">
-              <h2 className="text-[28px] mb-6">
-                Trips activity
-              </h2>
+            {/* Trip Rows */}
+            {/* Content omitted for brevity in this chunk, will be handled in a full file update if necessary, but focusing on the main structure first */}
+          </div>
+        </div>
+      </div>
 
-              {/* Filter Chips */}
-              <div className="flex gap-2 items-center mb-6">
-                <div className="bg-[#f1f1f1] px-6 py-2 rounded-[var(--radius)] h-10 flex items-center">
-                  <span className="text-[16px]">
-                    {ongoingTrips} Ongoing
-                  </span>
-                </div>
-                <div className="bg-[#f1f1f1] px-6 py-2 rounded-[var(--radius)] h-10 flex items-center">
-                  <span className="text-[16px]">
-                    {prebookedTrips} Prebooked
-                  </span>
-                </div>
-                <div className="h-16 px-8 flex items-center">
-                  <div className="bg-[#e2e2e2] h-full w-px" />
-                </div>
-                <div className="bg-[#f1f1f1] px-6 py-2 rounded-[var(--radius)] h-10 flex items-center">
-                  <span className="text-[16px]">
-                    {cancelledTrips} Cancelled
-                  </span>
-                </div>
-                <div className="bg-[#f1f1f1] px-6 py-2 rounded-[var(--radius)] h-10 flex items-center">
-                  <span className="text-[16px]">
-                    {completedTrips} Completed
-                  </span>
-                </div>
+      {/* Trips Activity */}
+      <div className="bg-[var(--surface)] border border-black/5 shadow-sm rounded-[24px] p-6 h-[600px] flex flex-col mx-4 md:mx-6 lg:mx-10 mt-6 mb-10">
+        <h2 className="text-[24px] font-semibold mb-6">Trips activity</h2>
+
+        {/* Filter Chips */}
+        <div className="flex flex-wrap gap-2 items-center mb-6">
+          {[
+            { label: "Ongoing", count: ongoingTrips, value: "In Progress", color: "text-blue-600 bg-blue-50" },
+            { label: "Prebooked", count: prebookedTrips, value: "Pending", color: "text-amber-600 bg-amber-50" },
+            { label: "Cancelled", count: cancelledTrips, value: "Cancelled", color: "text-red-600 bg-red-50" },
+            { label: "Completed", count: completedTrips, value: "Completed", color: "text-green-600 bg-green-50" }
+          ].map((chip) => (
+            <button
+              key={chip.label}
+              onClick={() => setActiveFilter(activeFilter === chip.value ? null : chip.value)}
+              className={`px-4 py-2 rounded-full flex items-center gap-2 transition-all border ${activeFilter === chip.value
+                ? "border-[var(--color-primary)] ring-1 ring-[var(--color-primary)]"
+                : "border-transparent bg-[#f1efef] hover:bg-[#e2e2e2]"
+                }`}
+            >
+              <span className={`text-[14px] font-medium`}>
+                <span className="opacity-60 mr-1">{chip.count}</span> {chip.label}
+              </span>
+            </button>
+          ))}
+
+          {activeFilter && (
+            <button
+              onClick={() => setActiveFilter(null)}
+              className="text-[13px] text-muted-foreground hover:text-foreground flex items-center gap-1 ml-2"
+            >
+              <X size={14} /> Clear
+            </button>
+          )}
+        </div>
+
+        {/* Search */}
+        <div className="mb-6">
+          <div className="bg-[#f1efef] rounded-[12px] px-4 h-12 flex items-center gap-3 w-full max-w-[360px]">
+            <Search className="size-5 text-[#5e5e5e]" />
+            <input
+              type="text"
+              placeholder="Search trips"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="bg-transparent outline-none flex-1 text-[15px] text-[#1e1a1a] placeholder:text-[#5e5e5e]"
+            />
+            {searchQuery && (
+              <button onClick={() => setSearchQuery("")}>
+                <X size={16} className="text-[#5e5e5e]" />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Trips Table */}
+        <div className="overflow-y-auto flex-1">
+          <div className="min-w-full">
+            {/* Table Header */}
+            <div className="flex gap-2 h-10 items-center border-b border-[#e2e2e2] bg-[#fcfcfc] sticky top-0 z-10">
+              <div className="w-[100px] px-4">
+                <p className="text-[13px] font-medium text-muted-foreground uppercase">Time</p>
               </div>
-
-              {/* Search */}
-              <div className="mb-6">
-                <div className="bg-[#f1f1f1] rounded-[var(--radius)] px-8 py-4 flex items-center gap-3 w-[360px]">
-                  <svg
-                    className="size-6"
-                    fill="none"
-                    viewBox="0 0 18 18"
-                  >
-                    <path
-                      d={svgPaths.p16b4a380}
-                      fill="#5e5e5e"
-                    />
-                  </svg>
-                  <input
-                    type="text"
-                    placeholder="Search trips"
-                    className="bg-transparent outline-none flex-1 text-[16px] text-[#5e5e5e] placeholder:text-[#5e5e5e]"
-                  />
-                </div>
+              <div className="w-[120px] px-4 text-center">
+                <p className="text-[13px] font-medium text-muted-foreground uppercase">Status</p>
               </div>
-
-              {/* Trips Table */}
-              <div className="overflow-x-auto">
-                <div className="min-w-full">
-                  {/* Table Header */}
-                  <div className="flex gap-2 h-12 items-center border-b border-[#e2e2e2]">
-                    <div className="w-[112px] px-4">
-                      <p className="text-[16px]">Time</p>
-                    </div>
-                    <div className="w-[104px] px-4">
-                      <p className="text-[16px]">Status</p>
-                    </div>
-                    <div className="w-[80px] px-4">
-                      <p className="text-[16px]">Driver ID</p>
-                    </div>
-                    <div className="flex-1 px-4">
-                      <p className="text-[16px]">Pickup</p>
-                    </div>
-                    <div className="flex-1 px-4">
-                      <p className="text-[16px]">Dropoff</p>
-                    </div>
-                    <div className="w-[104px] px-4">
-                      <p className="text-[16px]">Actions</p>
-                    </div>
-                  </div>
-
-                  {/* Trip Rows */}
-                  {passengerTrips
-                    .slice(0, 5)
-                    .map((trip, index) => (
-                      <div
-                        key={trip.id}
-                        className="flex gap-2 h-12 items-center border-b border-[#e2e2e2] hover:bg-[var(--color-surface-variant)]/30"
-                      >
-                        <div className="w-[112px] px-2">
-                          <p className="text-[16px]">
-                            {trip.time}
-                          </p>
-                        </div>
-                        <div className="w-[104px] px-4">
-                          <div className="bg-[#f8ecee] px-4 py-1 rounded-[4px] inline-block">
-                            <span className="text-[14px] leading-5 text-[#5f1127]">
-                              Arrived
-                            </span>
-                          </div>
-                        </div>
-                        <div className="w-[80px] px-4 flex items-center gap-1">
-                          <svg
-                            className="size-5"
-                            fill="none"
-                            viewBox="0 0 17 18"
-                          >
-                            <path
-                              d={svgPaths.p2dccee80}
-                              fill="black"
-                            />
-                          </svg>
-                          <span className="text-[16px]">
-                            {trip.driverId}
-                          </span>
-                        </div>
-                        <div className="flex-1 px-4">
-                          <p className="text-[16px] truncate">
-                            {trip.pickup}
-                          </p>
-                        </div>
-                        <div className="flex-1 px-4">
-                          <p className="text-[16px] truncate">
-                            {trip.dropoff}
-                          </p>
-                        </div>
-                        <div className="w-[104px] px-4 flex gap-1">
-                          <button className="size-10 flex items-center justify-center hover:bg-[var(--color-surface-variant)] rounded-[var(--radius)]">
-                            <Phone className="size-5 text-[#5e5e5e]" />
-                          </button>
-                          <button className="size-10 flex items-center justify-center hover:bg-[var(--color-surface-variant)] rounded-[var(--radius)] opacity-40">
-                            <svg
-                              className="size-6"
-                              fill="none"
-                              viewBox="0 0 20 20"
-                            >
-                              <path
-                                d={svgPaths.p2abe9d00}
-                                fill="#5e5e5e"
-                              />
-                            </svg>
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                </div>
+              <div className="w-[100px] px-4">
+                <p className="text-[13px] font-medium text-muted-foreground uppercase">Driver</p>
+              </div>
+              <div className="flex-1 px-4">
+                <p className="text-[13px] font-medium text-muted-foreground uppercase">Pickup</p>
+              </div>
+              <div className="flex-1 px-4">
+                <p className="text-[13px] font-medium text-muted-foreground uppercase">Dropoff</p>
               </div>
             </div>
+
+            {/* Trip Rows */}
+            {filteredItems.map((trip) => (
+              <div
+                key={trip.id}
+                className="flex gap-2 min-h-[48px] py-1 items-center border-b border-[#f1f1f1] hover:bg-[#fcfcfc] transition-colors"
+              >
+                <div className="w-[100px] px-4">
+                  <p className="text-[15px]">{trip.time}</p>
+                </div>
+                <div className="w-[120px] px-4 text-center">
+                  <span className={`text-[12px] px-2 py-1 rounded-[4px] font-medium ${trip.status === 'Completed' ? 'bg-green-50 text-green-700 border border-green-100' :
+                    trip.status === 'In Progress' ? 'bg-blue-50 text-blue-700 border border-blue-100' :
+                      trip.status === 'Pending' ? 'bg-amber-50 text-amber-700 border border-amber-100' :
+                        'bg-gray-50 text-gray-700 border border-gray-100'
+                    }`}>
+                    {trip.status}
+                  </span>
+                </div>
+                <div className="w-[100px] px-4">
+                  <span className="text-[15px] font-mono">{trip.driverId}</span>
+                </div>
+                <div className="flex-1 px-4 overflow-hidden">
+                  <p className="text-[14px] truncate text-[#1e1a1a]" title={trip.pickup}>{trip.pickup}</p>
+                </div>
+                <div className="flex-1 px-4 overflow-hidden">
+                  <p className="text-[14px] truncate text-[#1e1a1a]" title={trip.dropoff}>{trip.dropoff}</p>
+                </div>
+              </div>
+            ))}
+
+            {filteredItems.length === 0 && (
+              <div className="text-center py-20 text-muted-foreground">
+                <p>No trips found matching your criteria.</p>
+              </div>
+            )}
           </div>
         </div>
       </div>

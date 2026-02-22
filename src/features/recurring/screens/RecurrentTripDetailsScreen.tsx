@@ -99,17 +99,10 @@ export function RecurrentTripDetailsScreen({
     new Date(2025, 1, 1),
   ); // February 2025
   const [selectedSpecificDates, setSelectedSpecificDates] =
-    useState<Date[]>([
-      new Date(2025, 1, 17), // Feb 17
-      new Date(2025, 1, 22), // Feb 22
-      new Date(2025, 1, 25), // Feb 25
-      new Date(2025, 2, 17), // Mar 17
-      new Date(2025, 2, 22), // Mar 22
-      new Date(2025, 2, 25), // Mar 25
-    ]);
+    useState<Date[]>(recurrentTrip.specificDates?.map(d => new Date(d)) || []);
   const [specificDateTimes, setSpecificDateTimes] = useState<{
     [key: string]: { pickup: string; return: string };
-  }>({});
+  }>(recurrentTrip.specificDateTimes || {});
 
   const monthNames = [
     "Januar",
@@ -179,6 +172,8 @@ export function RecurrentTripDetailsScreen({
       daysOfWeek: formData.selectedDays,
       pickupTimes: formData.pickupTimes,
       returnTimes: formData.returnTimes,
+      specificDates: selectedSpecificDates.map(d => d.toISOString()),
+      specificDateTimes: specificDateTimes,
       insuranceCompany: formData.insuranceCompany,
       patientNumber: formData.patientNumber,
     };
@@ -225,7 +220,7 @@ export function RecurrentTripDetailsScreen({
   };
 
   return (
-    <div className="min-h-screen bg-[var(--color-surface)]">
+    <div className="min-h-screen bg-[var(--background)]">
       <div className="p-4 md:p-6 lg:p-10">
         {/* Back Button */}
         <button
@@ -522,11 +517,10 @@ export function RecurrentTripDetailsScreen({
                   onClick={() => setRecurrenceTab("specific")}
                 >
                   <p
-                    className={`text-[14px] leading-[20px] ${
-                      recurrenceTab === "specific"
-                        ? "font-semibold text-[#790518]"
-                        : "text-[#5e5e5e]"
-                    }`}
+                    className={`text-[14px] leading-[20px] ${recurrenceTab === "specific"
+                      ? "font-semibold text-[#790518]"
+                      : "text-[#5e5e5e]"
+                      }`}
                   >
                     Spezifische Daten und Zeiten festlegen
                   </p>
@@ -539,11 +533,10 @@ export function RecurrentTripDetailsScreen({
                   onClick={() => setRecurrenceTab("weekly")}
                 >
                   <p
-                    className={`text-[14px] leading-[20px] ${
-                      recurrenceTab === "weekly"
-                        ? "font-semibold text-[#790518]"
-                        : "text-[#5e5e5e]"
-                    }`}
+                    className={`text-[14px] leading-[20px] ${recurrenceTab === "weekly"
+                      ? "font-semibold text-[#790518]"
+                      : "text-[#5e5e5e]"
+                      }`}
                   >
                     Wöchentlichen Zeitplan festlegen
                   </p>
@@ -598,7 +591,7 @@ export function RecurrentTripDetailsScreen({
                               <p className="text-[16px] leading-[24px] text-[#1e1a1a] text-center">
                                 {
                                   monthNames[
-                                    displayMonth.getMonth()
+                                  displayMonth.getMonth()
                                   ]
                                 }{" "}
                                 {displayMonth.getFullYear()}
@@ -642,9 +635,9 @@ export function RecurrentTripDetailsScreen({
                                     (d) =>
                                       d.getDate() === day &&
                                       d.getMonth() ===
-                                        displayMonth.getMonth() &&
+                                      displayMonth.getMonth() &&
                                       d.getFullYear() ===
-                                        displayMonth.getFullYear(),
+                                      displayMonth.getFullYear(),
                                   );
 
                                 return (
@@ -658,11 +651,11 @@ export function RecurrentTripDetailsScreen({
                                             (d) =>
                                               !(
                                                 d.getDate() ===
-                                                  day &&
+                                                day &&
                                                 d.getMonth() ===
-                                                  displayMonth.getMonth() &&
+                                                displayMonth.getMonth() &&
                                                 d.getFullYear() ===
-                                                  displayMonth.getFullYear()
+                                                displayMonth.getFullYear()
                                               ),
                                           ),
                                         );
@@ -794,7 +787,7 @@ export function RecurrentTripDetailsScreen({
                                       ...specificDateTimes,
                                       [dateKey]: {
                                         ...specificDateTimes[
-                                          dateKey
+                                        dateKey
                                         ],
                                         pickup: value,
                                       },
@@ -817,7 +810,7 @@ export function RecurrentTripDetailsScreen({
                                       ...specificDateTimes,
                                       [dateKey]: {
                                         ...specificDateTimes[
-                                          dateKey
+                                        dateKey
                                         ],
                                         return: value,
                                       },
@@ -895,11 +888,10 @@ export function RecurrentTripDetailsScreen({
                         key={index}
                         onClick={() => toggleDay(index)}
                         disabled={!isEditing}
-                        className={`px-4 py-2 rounded-[var(--radius)] text-[16px] transition-colors ${
-                          formData.selectedDays.includes(index)
-                            ? "bg-[var(--color-accent)] text-white"
-                            : "bg-[#f1f1f1] text-[var(--color-on-surface)] hover:bg-[var(--color-surface-variant)]"
-                        } ${!isEditing ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
+                        className={`px-4 py-2 rounded-[var(--radius)] text-[16px] transition-colors ${formData.selectedDays.includes(index)
+                          ? "bg-[var(--color-accent)] text-white"
+                          : "bg-[#f1f1f1] text-[var(--color-on-surface)] hover:bg-[var(--color-surface-variant)]"
+                          } ${!isEditing ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
                       >
                         {day.short}
                       </button>
