@@ -210,7 +210,7 @@ export function BookingForm({
         node: (
           <div className="flex justify-between items-center w-full min-w-[300px]">
             <div><span className="font-medium text-[var(--color-on-surface)]">Taxi</span> <span className="text-[var(--color-on-surface-variant)] text-sm ml-1">in 5 min</span></div>
-            <div className="font-medium text-[var(--color-on-surface)]">€54.60</div>
+            <div className="font-medium text-[var(--color-on-surface)]">ca. €14-24</div>
           </div>
         )
       },
@@ -220,7 +220,7 @@ export function BookingForm({
         node: (
           <div className="flex justify-between items-center w-full min-w-[300px]">
             <div><span className="font-medium text-[var(--color-on-surface)]">Taxi Festpreis</span> <span className="text-[var(--color-on-surface-variant)] text-sm ml-1">in 2 min</span></div>
-            <div className="font-medium text-[var(--color-on-surface)]">c. €15–75</div>
+            <div className="font-medium text-[var(--color-on-surface)]">€15,75</div>
           </div>
         )
       },
@@ -230,7 +230,7 @@ export function BookingForm({
         node: (
           <div className="flex justify-between items-center w-full min-w-[300px]">
             <div><span className="font-medium text-[var(--color-on-surface)]"> Taxi XL</span> <span className="text-[var(--color-on-surface-variant)] text-sm ml-1">in 2 min</span></div>
-            <div className="font-medium text-[var(--color-on-surface)]">c. €10–35</div>
+            <div className="font-medium text-[var(--color-on-surface)]">ca. €20–35</div>
           </div>
         )
       },
