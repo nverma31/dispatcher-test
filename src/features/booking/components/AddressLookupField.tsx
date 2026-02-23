@@ -37,6 +37,7 @@ export const AddressLookupField = React.forwardRef<HTMLInputElement, AddressLook
 }, ref) => {
   const [inputValue, setInputValue] = useState(value?.address || '');
   const [predictions, setPredictions] = useState<PlacePrediction[]>([]);
+  const sessionTokenRef = useRef(crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2));
 
   // Update input value when external value changes
   useEffect(() => {
@@ -68,7 +69,18 @@ export const AddressLookupField = React.forwardRef<HTMLInputElement, AddressLook
               },
               body: JSON.stringify({
                 input: newValue,
-                includedRegionCodes: ['DE']
+                includedRegionCodes: ['DE'],
+                sessionToken: sessionTokenRef.current,
+                // Restrict results strictly to Hamburg area to speed up lookup for the user test
+                locationRestriction: {
+                  circle: {
+                    center: {
+                      latitude: 53.551086,
+                      longitude: 9.993682
+                    },
+                    radius: 30000.0 // 30km radius around Hamburg
+                  }
+                }
               })
             }
           );
@@ -126,43 +138,75 @@ export const AddressLookupField = React.forwardRef<HTMLInputElement, AddressLook
     const displayText = prediction.description;
     setInputValue(displayText);
 
-    // Geocode to get coordinates, preferring place_id if available
     try {
-      const queryParam = prediction.place_id
-        ? `place_id=${prediction.place_id}`
-        : `address=${encodeURIComponent(displayText)}`;
+      let locationData: LocationData | null = null;
 
-      const response = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?${queryParam}&key=${GOOGLE_MAPS_API_KEY}`
-      );
-
-      if (!response.ok) throw new Error('Geocoding error');
-
-      const data = await response.json();
-
-      if (data.results && data.results[0]?.geometry?.location) {
-        const loc = data.results[0].geometry.location;
-        const locationData: LocationData = {
-          address: data.results[0].formatted_address || displayText,
-          coordinates: {
-            lat: loc.lat,
-            lng: loc.lng
+      if (prediction.place_id) {
+        // Use Place Details API to terminate the billing session properly
+        const response = await fetch(
+          `https://places.googleapis.com/v1/places/${prediction.place_id}?fields=id,location,formattedAddress&sessionToken=${sessionTokenRef.current}`,
+          {
+            headers: {
+              'X-Goog-Api-Key': GOOGLE_MAPS_API_KEY
+            }
           }
-        };
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.location) {
+            locationData = {
+              address: data.formattedAddress || displayText,
+              coordinates: {
+                lat: data.location.latitude,
+                lng: data.location.longitude
+              }
+            };
+          }
+        }
+      }
+
+      // Fallback to Geocoding if Place Details failed or no place_id was available
+      if (!locationData) {
+        const queryParam = `address=${encodeURIComponent(displayText)}`;
+
+        const response = await fetch(
+          `https://maps.googleapis.com/maps/api/geocode/json?${queryParam}&key=${GOOGLE_MAPS_API_KEY}`
+        );
+
+        if (!response.ok) throw new Error('Geocoding error');
+
+        const data = await response.json();
+
+        if (data.results && data.results[0]?.geometry?.location) {
+          const loc = data.results[0].geometry.location;
+          locationData = {
+            address: data.results[0].formatted_address || displayText,
+            coordinates: {
+              lat: loc.lat,
+              lng: loc.lng
+            }
+          };
+        }
+      }
+
+      if (locationData) {
         onChange(locationData);
       } else {
-        // Fallback
         onChange({
           address: displayText,
           coordinates: { lat: 0, lng: 0 }
         });
       }
     } catch (error) {
-      console.error('Geocoding failed:', error);
+      console.error('Location lookup failed:', error);
       onChange({
         address: displayText,
         coordinates: { lat: 0, lng: 0 }
       });
+    } finally {
+      // Regenerate session token after finalizing a selection
+      sessionTokenRef.current = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2);
     }
   };
 
