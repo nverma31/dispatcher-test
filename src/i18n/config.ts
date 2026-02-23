@@ -16,7 +16,7 @@ i18n
                 translation: deTranslation,
             },
         },
-        lng: 'en', // Set default language
+        lng: 'de', // Set default language
         fallbackLng: 'en',
         interpolation: {
             escapeValue: false, // React automatically escapes by default
