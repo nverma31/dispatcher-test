@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { MapPin } from 'lucide-react';
 import { experimental } from '@freenow/wave';
 import { LocationData } from '@/types';
@@ -27,14 +27,14 @@ interface PlacePrediction extends Record<string, unknown> {
   };
 }
 
-export function AddressLookupField({
+export const AddressLookupField = React.forwardRef<HTMLInputElement, AddressLookupFieldProps>(({
   id,
   label,
   value,
   onChange,
   error,
   icon
-}: AddressLookupFieldProps) {
+}, ref) => {
   const [inputValue, setInputValue] = useState(value?.address || '');
   const [predictions, setPredictions] = useState<PlacePrediction[]>([]);
 
@@ -168,6 +168,8 @@ export function AddressLookupField({
 
   return (
     <ComboBox
+      // @ts-ignore
+      ref={ref}
       label={label}
       placeholder=""
       inputValue={inputValue}
@@ -189,4 +191,6 @@ export function AddressLookupField({
       ))}
     </ComboBox>
   );
-}
+});
+
+AddressLookupField.displayName = 'AddressLookupField';

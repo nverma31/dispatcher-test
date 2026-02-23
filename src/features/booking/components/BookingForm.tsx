@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ds/button";
 // Dropdown select icon (from icons/dropdown select.svg)
@@ -59,6 +59,7 @@ interface BookingFormProps {
     locationData: LocationData,
   ) => void;
   onCreateRecurrentTrip?: () => void;
+  prefilledDriverId?: string;
 }
 
 export function BookingForm({
@@ -67,13 +68,14 @@ export function BookingForm({
   dropoffLocation,
   onLocationUpdate,
   onCreateRecurrentTrip,
+  prefilledDriverId,
 }: BookingFormProps) {
   const { t } = useTranslation();
   const [formData, setFormData] = useState({
     date: "13/09/2025",
     time: "18:17",
-    passengerPhone: "+49 123 456789",
-    passengerName: "Leo",
+    passengerPhone: "",
+    passengerName: "",
     pickup: "",
     dropoff: "",
     payment: "pay_driver",
@@ -92,8 +94,81 @@ export function BookingForm({
     m4Approved: false,
   });
 
+  // Effect to handle prefilled driver ID from map marker click
+  useEffect(() => {
+    if (prefilledDriverId) {
+      setFormData((prev) => ({
+        ...prev,
+        driverId: prefilledDriverId,
+      }));
+      setIsAdditionalOptionsOpen(true);
+      toast.info("Fahrzeug ausgewählt", {
+        description: `Fahrer-ID ${prefilledDriverId} wurde übernommen.`,
+        duration: 3000,
+      });
+    }
+  }, [prefilledDriverId]);
+
   const [isAdditionalOptionsOpen, setIsAdditionalOptionsOpen] =
     useState(false);
+
+  // Refs for hotkeys
+  const phoneRef = useRef<any>(null);
+  const nameRef = useRef<any>(null);
+  const pickupRef = useRef<any>(null);
+  const dropoffRef = useRef<any>(null);
+
+  const focusField = (ref: React.RefObject<any>) => {
+    const el = ref.current;
+    if (!el) return;
+
+    // If the ref is already an input or textarea, focus it directly
+    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+      (el as HTMLElement).focus();
+    } else {
+      // Otherwise, query inside the wrapper for the input element
+      const input = el.querySelector('input, textarea') as HTMLElement | null;
+      if (input) {
+        input.focus();
+      } else {
+        el.focus(); // Fallback
+      }
+    }
+  };
+
+  // Keyboard shortcut listener
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Check if any of the hotkey function keys are pressed
+      if (['F1', 'F2', 'F3', 'F4', 'F5', 'F8'].includes(e.key)) {
+        e.preventDefault(); // Prevent default browser behavior
+
+        switch (e.key) {
+          case 'F1':
+            createBooking();
+            break;
+          case 'F2':
+            focusField(phoneRef);
+            break;
+          case 'F3':
+            focusField(nameRef);
+            break;
+          case 'F4':
+            focusField(pickupRef);
+            break;
+          case 'F5':
+            focusField(dropoffRef);
+            break;
+          case 'F8':
+            clearForm();
+            break;
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [formData, pickupLocation, dropoffLocation]); // Include dependencies used in createBooking & clearForm
 
   // Sync location data with form when locations are selected from map
   useEffect(() => {
@@ -127,9 +202,52 @@ export function BookingForm({
     { value: "fleet_02", label: "Eigene Flotte" },
   ];
 
-  const vehicleOptions = [
-    { value: "no_vehicles", label: t('dispatch.none') },
-  ];
+  const vehicleOptions = useMemo(() => {
+    return dropoffLocation && dropoffLocation.address ? [
+      {
+        value: "taxi_5min",
+        label: "Taxi in 5 min \u20ac54.60",
+        node: (
+          <div className="flex justify-between items-center w-full min-w-[300px]">
+            <div><span className="font-medium text-[var(--color-on-surface)]">Taxi</span> <span className="text-[var(--color-on-surface-variant)] text-sm ml-1">in 5 min</span></div>
+            <div className="font-medium text-[var(--color-on-surface)]">€54.60</div>
+          </div>
+        )
+      },
+      {
+        value: "mockfleet_taxi_2min",
+        label: "MockFleet Taxi in 2 min c. \u20ac10-55",
+        node: (
+          <div className="flex justify-between items-center w-full min-w-[300px]">
+            <div><span className="font-medium text-[var(--color-on-surface)]">MockFleet Taxi</span> <span className="text-[var(--color-on-surface-variant)] text-sm ml-1">in 2 min</span></div>
+            <div className="font-medium text-[var(--color-on-surface)]">c. €10–55</div>
+          </div>
+        )
+      },
+      {
+        value: "mockfleet_taxi_route_2min",
+        label: "MockFleet Taxi with real route in 2 min c. \u20ac15-75",
+        node: (
+          <div className="flex justify-between items-center w-full min-w-[300px]">
+            <div><span className="font-medium text-[var(--color-on-surface)]">MockFleet Taxi with real route</span> <span className="text-[var(--color-on-surface-variant)] text-sm ml-1">in 2 min</span></div>
+            <div className="font-medium text-[var(--color-on-surface)]">c. €15–75</div>
+          </div>
+        )
+      },
+      {
+        value: "mockfleet_turbo_taxi_2min",
+        label: "MockFleet Turbo Taxi in 2 min c. \u20ac10-35",
+        node: (
+          <div className="flex justify-between items-center w-full min-w-[300px]">
+            <div><span className="font-medium text-[var(--color-on-surface)]">MockFleet Turbo Taxi</span> <span className="text-[var(--color-on-surface-variant)] text-sm ml-1">in 2 min</span></div>
+            <div className="font-medium text-[var(--color-on-surface)]">c. €10–35</div>
+          </div>
+        )
+      },
+    ] : [
+      { value: "no_vehicles", label: t('dispatch.none') },
+    ];
+  }, [dropoffLocation?.address, t]);
 
   const recurrentTripOptions = [
     { value: "", label: "Keine" },
@@ -228,7 +346,7 @@ export function BookingForm({
   return (
     <div className="bg-[var(--color-surface-highest)] rounded-[var(--radius-card)] p-4 md:p-6 w-full lg:basis-1/2 lg:flex-[1_1_50%]">
 
-      <div className="space-y-4 md:space-y-6">
+      <div className="space-y-2 md:space-y-3">
         {/* Time & Date */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex gap-2 w-full sm:w-auto">
@@ -267,6 +385,7 @@ export function BookingForm({
         <div className="flex flex-col sm:flex-row gap-2">
           <div className="flex-1">
             <TextField
+              ref={phoneRef}
               label={t('dispatch.passengerPhone')}
               value={formData.passengerPhone}
               onChange={(value) =>
@@ -281,6 +400,7 @@ export function BookingForm({
 
           <div className="flex-1">
             <TextField
+              ref={nameRef}
               label={t('dispatch.passengerName')}
               value={formData.passengerName}
               onChange={(value) =>
@@ -314,6 +434,7 @@ export function BookingForm({
         <div className="space-y-4">
           <AddressLookupField
             id="pickup"
+            ref={pickupRef}
             label={t('dispatch.pickup')}
             value={pickupLocation}
             onChange={(location) =>
@@ -323,6 +444,7 @@ export function BookingForm({
 
           <AddressLookupField
             id="dropoff"
+            ref={dropoffRef}
             label={t('dispatch.dropoff')}
             value={dropoffLocation}
             onChange={(location) =>
@@ -332,28 +454,24 @@ export function BookingForm({
         </div>
 
         {/* Fleet & Vehicle (Moved up from Additional Options area) */}
-        <div className="flex flex-col sm:flex-row gap-2">
-          <div className="flex-1">
-            <SelectField
-              label={t('dispatch.fleet')}
-              value={formData.fleet}
-              options={fleetOptions}
-              onChange={(value: string | number) =>
-                setFormData({ ...formData, fleet: value as string })
-              }
-            />
-          </div>
-          <div className="flex-1">
-            <SelectField
-              label={t('dispatch.vehicle')}
-              value={formData.vehicle}
-              options={vehicleOptions}
-              onChange={(value: string | number) =>
-                setFormData({ ...formData, vehicle: value as string })
-              }
-              placeholder={t('dispatch.vehicle')}
-            />
-          </div>
+        <div className="flex flex-col gap-4">
+          <SelectField
+            label={t('dispatch.fleet')}
+            value={formData.fleet}
+            options={fleetOptions}
+            onChange={(value: string | number) =>
+              setFormData({ ...formData, fleet: value as string })
+            }
+          />
+          <SelectField
+            label="Vehicle"
+            value={formData.vehicle}
+            options={vehicleOptions}
+            onChange={(value: string | number) =>
+              setFormData({ ...formData, vehicle: value as string })
+            }
+            placeholder="Vehicle"
+          />
         </div>
 
 

@@ -30,13 +30,14 @@ export default function App() {
   const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
   const [selectedPassenger, setSelectedPassenger] = useState<Passenger | null>(null);
   const [selectedRecurrentTrip, setSelectedRecurrentTrip] = useState<RecurrentTrip | null>(null);
+  const [selectedDriverId, setSelectedDriverId] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<UserProfile>({
     id: 'u1',
     firstName: 'John',
     lastName: 'Smith',
     email: 'john.smith@free-now.com',
     phone: '+49 123 456789',
-    language: 'English'
+    language: 'Deutsch'
   });
   const [recurrentTrips, setRecurrentTrips] = useState<RecurrentTrip[]>([
     {
@@ -360,11 +361,13 @@ export default function App() {
                 dropoffLocation={dropoffLocation}
                 onLocationUpdate={handleLocationSelect}
                 onCreateRecurrentTrip={() => setCurrentPage('recurrent-trip')}
+                prefilledDriverId={selectedDriverId || undefined}
               />
               <MapArea
                 pickupLocation={pickupLocation}
                 dropoffLocation={dropoffLocation}
                 onLocationSelect={handleLocationSelect}
+                onDriverClick={(id: string) => setSelectedDriverId(id)}
               />
             </div>
 

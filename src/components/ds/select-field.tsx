@@ -6,6 +6,7 @@ const { Select: WaveSelect, ListBoxItem } = experimental;
 export interface SelectOption {
   value: string;
   label: string;
+  node?: React.ReactNode;
 }
 
 interface SelectFieldProps {
@@ -54,8 +55,8 @@ export const SelectField = React.forwardRef<HTMLDivElement, SelectFieldProps>(
         className={className}
       >
         {options.map((option) => (
-          <ListBoxItem key={option.value} id={option.value}>
-            {option.label}
+          <ListBoxItem key={option.value} id={option.value} textValue={option.label}>
+            {option.node || option.label}
           </ListBoxItem>
         ))}
       </WaveSelect>

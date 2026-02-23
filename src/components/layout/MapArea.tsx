@@ -16,6 +16,7 @@ interface MapAreaProps {
   pickupLocation: LocationData | null;
   dropoffLocation: LocationData | null;
   onLocationSelect: (type: 'pickup' | 'dropoff', locationData: LocationData) => void;
+  onDriverClick?: (driverId: string) => void;
 }
 
 interface Driver {
@@ -192,7 +193,7 @@ function FilterChip({
   );
 }
 
-export function MapArea({ pickupLocation, dropoffLocation, onLocationSelect }: MapAreaProps) {
+export function MapArea({ pickupLocation, dropoffLocation, onLocationSelect, onDriverClick }: MapAreaProps) {
 
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<google.maps.Map | null>(null);
@@ -461,6 +462,13 @@ export function MapArea({ pickupLocation, dropoffLocation, onLocationSelect }: M
         content: el,
       });
 
+      // Add click listener to bridge driver ID to booking form
+      marker.addListener('click', () => {
+        if (onDriverClick) {
+          onDriverClick(driver.id);
+        }
+      });
+
       driverMarkersRef.current.push(marker);
       if (!hasLocations) {
         // only expand bounds for drivers if no pickup/dropoff are present to keep focus on user selection
@@ -503,7 +511,7 @@ export function MapArea({ pickupLocation, dropoffLocation, onLocationSelect }: M
       map.setZoom(Math.min(zoom || 14, 15)); // Cap the zoom
     }
 
-  }, [pickupLocation, dropoffLocation, isLoading, fleetFilter, statusFilters, driverFilter]);
+  }, [pickupLocation, dropoffLocation, isLoading, fleetFilter, statusFilters, driverFilter, onDriverClick]);
 
   const zoomIn = () => {
     if (mapInstanceRef.current) {
