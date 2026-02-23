@@ -215,21 +215,11 @@ export function BookingForm({
         )
       },
       {
-        value: "mockfleet_taxi_2min",
-        label: "MockFleet Taxi in 2 min c. \u20ac10-55",
-        node: (
-          <div className="flex justify-between items-center w-full min-w-[300px]">
-            <div><span className="font-medium text-[var(--color-on-surface)]">MockFleet Taxi</span> <span className="text-[var(--color-on-surface-variant)] text-sm ml-1">in 2 min</span></div>
-            <div className="font-medium text-[var(--color-on-surface)]">c. €10–55</div>
-          </div>
-        )
-      },
-      {
         value: "mockfleet_taxi_route_2min",
         label: "MockFleet Taxi with real route in 2 min c. \u20ac15-75",
         node: (
           <div className="flex justify-between items-center w-full min-w-[300px]">
-            <div><span className="font-medium text-[var(--color-on-surface)]">MockFleet Taxi with real route</span> <span className="text-[var(--color-on-surface-variant)] text-sm ml-1">in 2 min</span></div>
+            <div><span className="font-medium text-[var(--color-on-surface)]">Taxi Festpreis</span> <span className="text-[var(--color-on-surface-variant)] text-sm ml-1">in 2 min</span></div>
             <div className="font-medium text-[var(--color-on-surface)]">c. €15–75</div>
           </div>
         )
@@ -239,7 +229,7 @@ export function BookingForm({
         label: "MockFleet Turbo Taxi in 2 min c. \u20ac10-35",
         node: (
           <div className="flex justify-between items-center w-full min-w-[300px]">
-            <div><span className="font-medium text-[var(--color-on-surface)]">MockFleet Turbo Taxi</span> <span className="text-[var(--color-on-surface-variant)] text-sm ml-1">in 2 min</span></div>
+            <div><span className="font-medium text-[var(--color-on-surface)]"> Taxi XL</span> <span className="text-[var(--color-on-surface-variant)] text-sm ml-1">in 2 min</span></div>
             <div className="font-medium text-[var(--color-on-surface)]">c. €10–35</div>
           </div>
         )
