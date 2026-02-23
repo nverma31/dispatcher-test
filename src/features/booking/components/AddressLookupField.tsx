@@ -120,7 +120,7 @@ export function AddressLookupField({
   const handleSelectionChange = async (key: React.Key | null) => {
     if (!key) return;
 
-    const prediction = predictions.find(p => p.place_id === key);
+    const prediction = predictions.find(p => p.id === key);
     if (!prediction) return;
 
     const displayText = prediction.description;

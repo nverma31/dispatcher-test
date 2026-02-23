@@ -36,7 +36,7 @@ export default function App() {
     lastName: 'Smith',
     email: 'john.smith@free-now.com',
     phone: '+49 123 456789',
-    language: 'Deutsch'
+    language: 'English'
   });
   const [recurrentTrips, setRecurrentTrips] = useState<RecurrentTrip[]>([
     {
@@ -646,9 +646,12 @@ export default function App() {
           <div className="min-h-screen">
             <AccountScreen
               user={currentUser}
-              onSave={(updatedData: Partial<UserProfile>) => {
+              onUpdateUser={(updatedData: Partial<UserProfile>) => {
                 setCurrentUser(prev => ({ ...prev, ...updatedData }));
-                toast.success('Profil erfolgreich aktualisiert');
+                toast.success('Profile updated successfully');
+              }}
+              onSignOut={() => {
+                toast.info('Sign out not implemented in MVP');
               }}
             />
           </div>

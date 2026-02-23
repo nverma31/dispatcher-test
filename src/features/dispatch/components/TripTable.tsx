@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { experimental } from '@freenow/wave';
 import { Search, X, Calendar as CalendarIcon } from 'lucide-react';
 import { format, parse, isValid, addDays } from 'date-fns';
@@ -13,14 +14,23 @@ const XCircleSvg = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" 
 
 const CarOutlineSvg = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15.75 4.99935C15.5833 4.49935 15.0833 4.16602 14.5833 4.16602H5.41667C4.83333 4.16602 4.41667 4.49935 4.25 4.99935L2.5 9.99935V16.666C2.5 17.0827 2.91667 17.4993 3.33333 17.4993H4.16667C4.66667 17.4993 5 17.0827 5 16.666V15.8327H15V16.666C15 17.0827 15.4167 17.4993 15.8333 17.4993H16.6667C17.0833 17.4993 17.5 17.0827 17.5 16.666V9.99935L15.75 4.99935ZM5.66667 5.83268H14.25L15.1667 8.33268H4.83333L5.66667 5.83268ZM15.8333 14.166H4.16667V9.99935H15.8333V14.166ZM6.25 10.8327C6.91667 10.8327 7.5 11.416 7.5 12.0827C7.5 12.7493 6.91667 13.3327 6.25 13.3327C5.58333 13.3327 5 12.7493 5 12.0827C5 11.416 5.58333 10.8327 6.25 10.8327ZM13.75 10.8327C14.4167 10.8327 15 11.416 15 12.0827C15 12.7493 14.4167 13.3327 13.75 13.3327C13.0833 13.3327 12.5 12.7493 12.5 12.0827C12.5 11.416 13.0833 10.8327 13.75 10.8327Z" fill="currentColor"/></svg>`;
 
+const CalendarTodayOutlineSvg = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M19 3H18V1H16V3H8V1H6V3H5C3.9 3 3 3.89 3 5V19C3 20.11 3.9 21 5 21H19C20.11 21 21 20.11 21 19V5C21 3.89 20.11 3 19 3ZM19 19H5V9H19V19ZM19 7H5V5H19M7 11H12V16H7" fill="currentColor"/>
+</svg>`;
+
+const SearchSvg = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M19.6 21L13.3 14.7C12.8 15.1 12.225 15.4167 11.575 15.65C10.925 15.8833 10.2333 16 9.5 16C7.68333 16 6.14583 15.3708 4.8875 14.1125C3.62917 12.8542 3 11.3167 3 9.5C3 7.68333 3.62917 6.14583 4.8875 4.8875C6.14583 3.62917 7.68333 3 9.5 3C11.3167 3 12.8542 3.62917 14.1125 4.8875C15.3708 6.14583 16 7.68333 16 9.5C16 10.2333 15.8833 10.925 15.65 11.575C15.4167 12.225 15.1 12.8 14.7 13.3L21 19.6L19.6 21ZM9.5 14C10.75 14 11.8125 13.5625 12.6875 12.6875C13.5625 11.8125 14 10.75 14 9.5C14 8.25 13.5625 7.1875 12.6875 6.3125C11.8125 5.4375 10.75 5 9.5 5C8.25 5 7.1875 5.4375 6.3125 6.3125C5.4375 7.1875 5 8.25 5 9.5C5 10.75 5.4375 11.8125 6.3125 12.6875C7.1875 13.5625 8.25 14 9.5 14Z" fill="currentColor"/>
+</svg>`;
+
+
 const { Table, TableHeader, TableBody, Column, Row, Cell } = experimental;
 
 // Inline SVG icon helper
-function SvgIcon({ raw, size = 24, className }: { raw: string; size?: number; className?: string }) {
+function SvgIcon({ raw, size = 24, className, style }: { raw: string; size?: number; className?: string; style?: React.CSSProperties }) {
   return (
     <span
       className={className}
-      style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: size, height: size, flexShrink: 0 }}
+      style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: size, height: size, flexShrink: 0, ...style }}
       dangerouslySetInnerHTML={{ __html: raw }}
     />
   );
@@ -115,6 +125,7 @@ interface TripTableProps {
 }
 
 export function TripTable({ trips, onTripClick }: TripTableProps) {
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -127,13 +138,13 @@ export function TripTable({ trips, onTripClick }: TripTableProps) {
   }, [trips]);
 
   const filterChipsLeft = [
-    { label: 'Ongoing', status: 'In Progress' },
-    { label: 'Prebooked', status: 'Pending' },
+    { label: t('dispatch.ongoing'), status: 'In Progress' },
+    { label: t('dispatch.prebooked'), status: 'Pending' },
   ];
   const filterChipsRight = [
-    { label: 'Cancelled', status: 'Cancelled' },
-    { label: 'Completed', status: 'Completed' },
-    { label: 'Completed by FREENOW', status: 'Completed by FREENOW' },
+    { label: t('dispatch.cancelled'), status: 'Cancelled' },
+    { label: t('dispatch.completed'), status: 'Completed' },
+    { label: t('status.completedByFreeNow'), status: 'Completed by FREENOW' },
   ];
 
   const filteredTrips = useMemo(() => {
@@ -204,7 +215,7 @@ export function TripTable({ trips, onTripClick }: TripTableProps) {
               onClick={() => setSelectedStatus(null)}
               style={{ ...chipStyle, backgroundColor: 'transparent', color: 'var(--color-sys-on-surface-variant)' }}
             >
-              <X size={14} /> Clear
+              <X size={14} /> {t('passenger.clearFilter')}
             </button>
           )}
         </div>
@@ -217,7 +228,7 @@ export function TripTable({ trips, onTripClick }: TripTableProps) {
             style={chipStyle}
             onClick={() => setShowDatePicker(!showDatePicker)}
           >
-            <CalendarIcon size={20} style={{ color: 'var(--color-sys-on-surface)' }} />
+            <SvgIcon raw={CalendarTodayOutlineSvg} size={20} style={{ color: 'var(--color-sys-on-surface)' }} />
             <span style={{ fontSize: 'var(--fs-label-1)', fontWeight: 'var(--fw-label-1)' }}>{dateLabel}</span>
             {selectedDate && (
               <X
@@ -238,12 +249,12 @@ export function TripTable({ trips, onTripClick }: TripTableProps) {
               flexShrink: 0,
             }}
           >
-            <Search size={24} style={{ color: 'var(--color-sys-on-surface-variant)', flexShrink: 0 }} />
+            <SvgIcon raw={SearchSvg} size={24} style={{ color: 'var(--color-sys-on-surface-variant)' }} />
             <input
               type="text"
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              placeholder="Search booking"
+              placeholder={t('dispatch.searchPlaceholder')}
               style={{
                 flex: 1, border: 'none', outline: 'none', background: 'transparent',
                 fontSize: 'var(--fs-label-1)', fontWeight: 'var(--fw-label-1)',
@@ -273,14 +284,14 @@ export function TripTable({ trips, onTripClick }: TripTableProps) {
           selectionMode="single"
         >
           <TableHeader>
-            <Column isRowHeader>Time</Column>
-            <Column>Status</Column>
-            <Column>Driver ID</Column>
-            <Column>Pickup</Column>
-            <Column>Dropoff</Column>
-            <Column>Pass. name</Column>
-            <Column>Phone</Column>
-            <Column>Actions</Column>
+            <Column isRowHeader>{t('dispatch.table.pickupTime')}</Column>
+            <Column>{t('dispatch.table.status')}</Column>
+            <Column>{t('dispatch.table.driverId')}</Column>
+            <Column>{t('dispatch.table.pickup')}</Column>
+            <Column>{t('dispatch.table.dropoff')}</Column>
+            <Column>{t('dispatch.table.passengerName')}</Column>
+            <Column>{t('dispatch.table.phoneNumber')}</Column>
+            <Column>{t('dispatch.table.actions')}</Column>
           </TableHeader>
           <TableBody items={filteredTrips}>
             {(trip) => {
@@ -335,14 +346,14 @@ export function TripTable({ trips, onTripClick }: TripTableProps) {
 
         {filteredTrips.length === 0 && (
           <div style={{ textAlign: 'center', padding: '80px 0', color: 'var(--color-sys-on-surface-variant)' }}>
-            <CalendarIcon size={48} style={{ margin: '0 auto 16px', opacity: 0.2 }} />
-            <p style={{ fontSize: 18, fontWeight: 500, marginBottom: 4, color: 'var(--color-sys-on-surface)' }}>No bookings found</p>
-            <p style={{ fontSize: 14 }}>Try using other filters or search terms.</p>
+            <SvgIcon raw={CalendarTodayOutlineSvg} size={48} style={{ margin: '0 auto 16px', opacity: 0.2 }} />
+            <p style={{ fontSize: 18, fontWeight: 500, marginBottom: 4, color: 'var(--color-sys-on-surface)' }}>{t('passenger.table.noBookingsFound')}</p>
+            <p style={{ fontSize: 14 }}>{t('passenger.table.tryOtherFilters')}</p>
             <button
               style={{ marginTop: 24, padding: '8px 24px', borderRadius: 12, border: '1px solid var(--color-sys-divider)', background: 'none', cursor: 'pointer', fontSize: 14 }}
               onClick={() => { setSearchTerm(''); setSelectedStatus(null); setSelectedDate(null); }}
             >
-              Clear all filters
+              {t('passenger.table.clearFilters')}
             </button>
           </div>
         )}

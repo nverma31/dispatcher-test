@@ -4,6 +4,8 @@ import { experimental } from "@freenow/wave";
 import { UserProfile } from "@/types";
 
 const { Button: WaveButton } = experimental;
+import { LanguageSwitcher } from "@/components/layout/LanguageSwitcher";
+import { useTranslation } from "react-i18next";
 
 interface AccountScreenProps {
     user: UserProfile;
@@ -12,12 +14,14 @@ interface AccountScreenProps {
 }
 
 export function AccountScreen({ user, onUpdateUser, onSignOut }: AccountScreenProps) {
+    const { t } = useTranslation();
+
     const profileFields = [
-        { label: "First Name", value: user.firstName, key: "firstName" },
-        { label: "Last Name", value: user.lastName, key: "lastName" },
-        { label: "Email", value: user.email, key: "email" },
-        { label: "Phone number", value: user.phone, key: "phone" },
-        { label: "Language", value: user.language, key: "language" },
+        { label: t('profile.firstName'), value: user.firstName, key: "firstName" },
+        { label: t('profile.lastName'), value: user.lastName, key: "lastName" },
+        { label: t('profile.email'), value: user.email, key: "email" },
+        { label: t('profile.phone'), value: user.phone, key: "phone" },
+        { label: t('profile.language'), value: user.language, key: "language" },
     ];
 
     return (
@@ -57,14 +61,14 @@ export function AccountScreen({ user, onUpdateUser, onSignOut }: AccountScreenPr
                             margin: 0,
                         }}
                     >
-                        Profile details
+                        {t('profile.title')}
                     </h1>
 
                     <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
                         {/* Add new number — secondary emphasis (surface-variant bg, on-surface text) */}
                         <WaveButton emphasis="secondary">
                             <Plus size={16} style={{ marginRight: 6 }} />
-                            Add new number
+                            {t('profile.addNewNumber')}
                         </WaveButton>
 
                         {/* Sign out — styled with marooned tint to match design */}
@@ -77,7 +81,7 @@ export function AccountScreen({ user, onUpdateUser, onSignOut }: AccountScreenPr
                             }}
                         >
                             <LogOut size={16} style={{ marginRight: 6 }} />
-                            Sign out
+                            {t('profile.signOut')}
                         </WaveButton>
                     </div>
                 </div>
@@ -108,37 +112,48 @@ export function AccountScreen({ user, onUpdateUser, onSignOut }: AccountScreenPr
                                 {field.label}
                             </span>
 
-                            {/* Value */}
-                            <span
-                                style={{
-                                    flex: 1,
-                                    fontSize: "var(--fs-body-1)",
-                                    color: "var(--color-sys-on-surface)",
-                                }}
-                            >
-                                {field.value}
-                            </span>
+                            {/* Value / Switcher */}
+                            {field.key === "language" ? (
+                                <div style={{ flex: 1 }}>
+                                    <LanguageSwitcher
+                                        currentLanguage={field.value}
+                                        onLanguageChange={(newLang: string) => onUpdateUser({ language: newLang })}
+                                    />
+                                </div>
+                            ) : (
+                                <span
+                                    style={{
+                                        flex: 1,
+                                        fontSize: "var(--fs-body-1)",
+                                        color: "var(--color-sys-on-surface)",
+                                    }}
+                                >
+                                    {field.value}
+                                </span>
+                            )}
 
-                            {/* Edit icon button */}
-                            <button
-                                aria-label={`Edit ${field.label}`}
-                                style={{
-                                    background: "none",
-                                    border: "none",
-                                    cursor: "pointer",
-                                    padding: "6px",
-                                    borderRadius: "50%",
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    color: "var(--color-sys-on-surface-variant)",
-                                    flexShrink: 0,
-                                }}
-                                onMouseEnter={e => (e.currentTarget.style.backgroundColor = "var(--color-sys-surface-container)")}
-                                onMouseLeave={e => (e.currentTarget.style.backgroundColor = "transparent")}
-                            >
-                                <Pen size={16} />
-                            </button>
+                            {/* Edit icon button - hidden for language since it has a switcher */}
+                            {field.key !== "language" && (
+                                <button
+                                    aria-label={`Edit ${field.label}`}
+                                    style={{
+                                        background: "none",
+                                        border: "none",
+                                        cursor: "pointer",
+                                        padding: "6px",
+                                        borderRadius: "50%",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        color: "var(--color-sys-on-surface-variant)",
+                                        flexShrink: 0,
+                                    }}
+                                    onMouseEnter={e => (e.currentTarget.style.backgroundColor = "var(--color-sys-surface-container)")}
+                                    onMouseLeave={e => (e.currentTarget.style.backgroundColor = "transparent")}
+                                >
+                                    <Pen size={16} />
+                                </button>
+                            )}
                         </div>
                     ))}
                 </div>

@@ -13,3 +13,17 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Passenger detail: two equal columns on large screens */
+.passenger-detail-columns {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  width: 100%;
+  align-items: stretch;
+}
+@media (min-width: 1024px) {
+  .passenger-detail-columns {
+    grid-template-columns: 1fr 1fr;
+  }
+}

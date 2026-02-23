@@ -164,7 +164,7 @@ function FilterChip({
           className="absolute top-[calc(100%+6px)] left-0 min-w-[160px] rounded-[12px] overflow-hidden z-[1000] py-1"
           style={{ backgroundColor: 'white', boxShadow: SM_SHADOW }}
         >
-          {options.map((option) => (
+          {options.filter(o => o.value !== value).map((option) => (
             <button
               key={option.value}
               onClick={() => handleSelect(option.value)}
@@ -175,13 +175,13 @@ function FilterChip({
                 fontSize: 14,
                 fontWeight: 500,
                 color: '#1e1a1a',
-                background: value === option.value ? '#f0f0f0' : 'transparent',
+                background: 'transparent',
                 border: 'none',
                 cursor: 'pointer',
                 transition: 'background 0.12s',
               }}
               onMouseEnter={e => (e.currentTarget as HTMLElement).style.backgroundColor = '#f5f5f5'}
-              onMouseLeave={e => (e.currentTarget as HTMLElement).style.backgroundColor = value === option.value ? '#f0f0f0' : 'transparent'}
+              onMouseLeave={e => (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'}
             >
               {option.label}
             </button>

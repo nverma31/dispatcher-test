@@ -1,12 +1,27 @@
 import { useState } from 'react';
-import { Search } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 import { Button } from '@/components/ds/button';
-
+import { useTranslation } from 'react-i18next';
 const DropdownSelectIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path d="M11.2487 15.6585C11.6471 16.1138 12.3555 16.1138 12.7539 15.6585L17.5501 10.1771C18.1159 9.53048 17.6567 8.51855 16.7975 8.51855L7.20507 8.51855C6.34591 8.51855 5.88673 9.53048 6.45249 10.1771L11.2487 15.6585Z" fill="currentColor" />
   </svg>
 );
+
+const SearchSvg = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M19.6 21L13.3 14.7C12.8 15.1 12.225 15.4167 11.575 15.65C10.925 15.8833 10.2333 16 9.5 16C7.68333 16 6.14583 15.3708 4.8875 14.1125C3.62917 12.8542 3 11.3167 3 9.5C3 7.68333 3.62917 6.14583 4.8875 4.8875C6.14583 3.62917 7.68333 3 9.5 3C11.3167 3 12.8542 3.62917 14.1125 4.8875C15.3708 6.14583 16 7.68333 16 9.5C16 10.2333 15.8833 10.925 15.65 11.575C15.4167 12.225 15.1 12.8 14.7 13.3L21 19.6L19.6 21ZM9.5 14C10.75 14 11.8125 13.5625 12.6875 12.6875C13.5625 11.8125 14 10.75 14 9.5C14 8.25 13.5625 7.1875 12.6875 6.3125C11.8125 5.4375 10.75 5 9.5 5C8.25 5 7.1875 5.4375 6.3125 6.3125C5.4375 7.1875 5 8.25 5 9.5C5 10.75 5.4375 11.8125 6.3125 12.6875C7.1875 13.5625 8.25 14 9.5 14Z" fill="currentColor"/>
+</svg>`;
+
+// Inline SVG icon helper
+function SvgIcon({ raw, size = 24, className, style }: { raw: string; size?: number; className?: string; style?: React.CSSProperties }) {
+  return (
+    <span
+      className={className}
+      style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: size, height: size, flexShrink: 0, ...style }}
+      dangerouslySetInnerHTML={{ __html: raw }}
+    />
+  );
+}
 
 // ─── Icons from icons folder (inlined) ────────────────────────────────────────
 
@@ -53,6 +68,7 @@ interface PassengersListScreenProps {
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 function StatusBadge({ status }: { status: PassengerData['status'] }) {
+  const { t } = useTranslation();
   const isComplete = status === 'Vollständig';
   return (
     <span style={{
@@ -62,7 +78,7 @@ function StatusBadge({ status }: { status: PassengerData['status'] }) {
       color: isComplete ? 'var(--palette-green-20, #1a4a1d)' : 'var(--sys/color/on-negative-container, #790518)',
       fontSize: 14, fontWeight: 400, lineHeight: '20px', whiteSpace: 'nowrap',
     }}>
-      {status}
+      {isComplete ? t('passengers.completeStatus') : t('passengers.missingInformationStatus')}
     </span>
   );
 }
@@ -141,6 +157,7 @@ export function PassengersListScreen({
   onDeletePassenger,
   onEditPassenger,
 }: PassengersListScreenProps) {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [showMissingOnly, setShowMissingOnly] = useState(false);
 
@@ -157,7 +174,7 @@ export function PassengersListScreen({
   });
 
   const handleDelete = (id: string) => {
-    if (confirm('Möchten Sie diesen Fahrgast wirklich löschen?')) {
+    if (confirm(t('passengers.deleteConfirm'))) {
       onDeletePassenger(id);
     }
   };
@@ -200,7 +217,7 @@ export function PassengersListScreen({
             fontSize: 28, fontWeight: 700, lineHeight: '36px',
             color: 'var(--color-sys-on-surface, #1e1a1a)', margin: 0,
           }}>
-            Fahrgäste
+            {t('passengers.title')}
           </p>
           <Button
             variant="secondary"
@@ -208,33 +225,42 @@ export function PassengersListScreen({
             style={{ height: 56, paddingLeft: 16, paddingRight: 16, gap: 8, flexShrink: 0 }}
           >
             <PlusIcon />
-            Fahrgast hinzufügen
+            {t('passengers.addPassenger')}
           </Button>
         </div>
 
         {/* ── Filters ── */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
           <FilterChip
-            label={`${missingCount} fehlende Informationen`}
+            label={`${missingCount} ${t('passengers.missingInformation')}`}
             active={showMissingOnly}
             onClick={() => setShowMissingOnly(v => !v)}
           />
           <div style={{
-            display: 'flex', alignItems: 'center', gap: 8, width: 360, height: 40,
-            padding: '0 16px', borderRadius: 12, flexShrink: 0,
-            backgroundColor: 'var(--sys/color/surface-container, #f1efef)',
+            display: 'flex', alignItems: 'center', gap: 8,
+            width: 200, height: 40, padding: '0 12px',
+            borderRadius: 12, flexShrink: 0,
+            backgroundColor: 'var(--color-sys-surface-container, #f1efef)',
           }}>
-            <Search size={24} color="var(--color-sys-on-surface-variant, #675b5b)" />
+            <SvgIcon raw={SearchSvg} size={24} style={{ color: 'var(--color-sys-on-surface-variant)' }} />
             <input
               type="text"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              placeholder="Fahrgast suchen"
+              placeholder={t('passengers.searchPlaceholder')}
               style={{
                 flex: 1, border: 'none', background: 'transparent', outline: 'none',
-                fontSize: 16, fontWeight: 500, color: 'var(--color-sys-on-surface, #1e1a1a)',
+                fontSize: 'var(--fs-label-1, 16px)', fontWeight: 'var(--fw-label-1, 500)', color: 'var(--color-sys-on-surface, #1e1a1a)',
               }}
             />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', color: 'var(--color-sys-on-surface-variant)' }}
+              >
+                <X size={18} />
+              </button>
+            )}
           </div>
         </div>
 
@@ -242,12 +268,12 @@ export function PassengersListScreen({
         <div style={{ width: '100%', overflowX: 'auto' }}>
           {/* Header row */}
           <div style={{ display: 'flex', height: 72, alignItems: 'center', gap: 8, position: 'relative' }}>
-            <TH>Passenger name / ID</TH>
-            <TH>Phone number</TH>
-            <TH>Recurrent trips</TH>
-            <TH>Purpose</TH>
-            <TH>Status</TH>
-            <TH width={104}>Actions</TH>
+            <TH>{t('passengers.passengerNameId')}</TH>
+            <TH>{t('passengers.phoneNumber')}</TH>
+            <TH>{t('passengers.recurrentTrips')}</TH>
+            <TH>{t('passengers.purpose')}</TH>
+            <TH>{t('passengers.status')}</TH>
+            <TH width={104}>{t('passengers.actions')}</TH>
           </div>
           {DIVIDER}
 
@@ -257,7 +283,7 @@ export function PassengersListScreen({
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               height: 120, color: 'var(--color-sys-on-surface-variant, #675b5b)', fontSize: 16,
             }}>
-              Keine Fahrgäste gefunden
+              {t('passengers.noPassengersFound')}
             </div>
           ) : (
             filtered.map(passenger => (
@@ -291,10 +317,10 @@ export function PassengersListScreen({
                   {/* Actions — right-aligned */}
                   <TD width={104} align="end">
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <IconBtn title="Bearbeiten" onClick={() => onEditPassenger(passenger.id)}>
+                      <IconBtn title={t('passengers.edit')} onClick={() => onEditPassenger(passenger.id)}>
                         <PenIcon />
                       </IconBtn>
-                      <IconBtn title="Löschen" onClick={() => handleDelete(passenger.id)}>
+                      <IconBtn title={t('passengers.delete')} onClick={() => handleDelete(passenger.id)}>
                         <TrashIcon />
                       </IconBtn>
                     </div>

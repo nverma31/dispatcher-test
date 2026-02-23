@@ -1,4 +1,5 @@
 import svgPaths from "@/components/icons/svg-kwl2nemlxy";
+import { useTranslation } from "react-i18next";
 
 interface SidebarProps {
   currentPage: 'dispatch' | 'passengers' | 'passenger-details' | 'recurrent-trip' | 'recurrent-trip-details' | 'settings';
@@ -100,6 +101,7 @@ function SettingsIcon({ isActive }: { isActive: boolean }) {
 }
 
 export function Sidebar({ currentPage, onNavigate }: SidebarProps) {
+  const { t } = useTranslation();
   const isDispatchActive = currentPage === 'dispatch' || currentPage === 'recurrent-trip';
   const isPassengersActive = currentPage === 'passengers' || currentPage === 'passenger-details' || currentPage === 'recurrent-trip-details';
 
@@ -116,13 +118,13 @@ export function Sidebar({ currentPage, onNavigate }: SidebarProps) {
         <div className="content-stretch flex flex-col gap-[32px] items-center relative shrink-0 w-full">
           <NavItem
             icon={<DispatchIcon isActive={isDispatchActive} />}
-            label="Disposition"
+            label={t('sidebar.dispatch')}
             isActive={isDispatchActive}
             onClick={() => onNavigate('dispatch')}
           />
           <NavItem
             icon={<PassengersIcon isActive={isPassengersActive} />}
-            label="Fahrgäste"
+            label={t('sidebar.passengers')}
             isActive={isPassengersActive}
             onClick={() => onNavigate('passengers')}
           />
@@ -131,7 +133,7 @@ export function Sidebar({ currentPage, onNavigate }: SidebarProps) {
         {/* Settings at Bottom */}
         <NavItem
           icon={<SettingsIcon isActive={currentPage === 'settings'} />}
-          label="Profil"
+          label={t('sidebar.account')}
           isActive={currentPage === 'settings'}
           onClick={() => onNavigate('settings')}
         />

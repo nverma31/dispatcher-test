@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ds/button";
 // Dropdown select icon (from icons/dropdown select.svg)
 const DropdownSelectIcon = ({ open }: { open: boolean }) => (
@@ -67,6 +68,7 @@ export function BookingForm({
   onLocationUpdate,
   onCreateRecurrentTrip,
 }: BookingFormProps) {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     date: "13/09/2025",
     time: "18:17",
@@ -75,14 +77,14 @@ export function BookingForm({
     pickup: "",
     dropoff: "",
     payment: "pay_driver",
-    costCenter: "marketing",
+    costCenter: "None",
     fleet: "fleet_01",
     vehicle: "",
     driverId: "",
     customPrice: "",
     notes: "",
     tripType: "other",
-    tripTitle: "Post-surgery trip",
+    tripTitle: "",
     linkedRecurrentTrip: "",
     insuranceCompany: "",
     insuranceNumber: "",
@@ -114,11 +116,11 @@ export function BookingForm({
 
   // Dropdown options
   const paymentOptions = [
-    { value: "pay_driver", label: "Fahrer direkt bezahlen" },
+    { value: "pay_driver", label: t('dispatch.payDriver') },
     { value: "card", label: "Karte" },
   ];
 
-  const costCenterOptions = [{ value: "None", label: "Keine" }];
+  const costCenterOptions = [{ value: "None", label: t('dispatch.none') }];
 
   const fleetOptions = [
     { value: "fleet_01", label: "FreeNow Flotte" },
@@ -126,7 +128,7 @@ export function BookingForm({
   ];
 
   const vehicleOptions = [
-    { value: "no_vehicles", label: "Kein Fahrzeug verfügbar" },
+    { value: "no_vehicles", label: t('dispatch.none') },
   ];
 
   const recurrentTripOptions = [
@@ -144,14 +146,14 @@ export function BookingForm({
       pickup: "",
       dropoff: "",
       payment: "pay_driver",
-      costCenter: "",
+      costCenter: "None",
       fleet: "fleet_01",
       vehicle: "",
       driverId: "",
       customPrice: "",
       notes: "",
       tripType: "other",
-      tripTitle: "Post-surgery trip",
+      tripTitle: "",
       linkedRecurrentTrip: "",
       insuranceCompany: "",
       insuranceNumber: "",
@@ -171,13 +173,13 @@ export function BookingForm({
     const missingFields = [];
 
     if (!formData.passengerName)
-      missingFields.push("Name des Fahrgasts");
+      missingFields.push(t('dispatch.passengerName'));
     if (!formData.passengerPhone)
-      missingFields.push("Telefonnummer");
+      missingFields.push(t('dispatch.passengerPhone'));
     if (!pickupLocation || !pickupLocation.address)
-      missingFields.push("Abholadresse");
+      missingFields.push(t('dispatch.pickup'));
     if (!dropoffLocation || !dropoffLocation.address)
-      missingFields.push("Zieladresse");
+      missingFields.push(t('dispatch.dropoff'));
 
     if (missingFields.length > 0) {
       const errorMsg = `Bitte füllen Sie alle erforderlichen Felder aus: ${missingFields.join(", ")}`;
@@ -232,7 +234,7 @@ export function BookingForm({
           <div className="flex gap-2 w-full sm:w-auto">
             <div className="min-w-[140px] sm:min-w-[184px] flex-1 sm:flex-none">
               <DateInput
-                label="Datum"
+                label={t('dispatch.date')}
                 value={formData.date}
                 onChange={(value) =>
                   setFormData({ ...formData, date: value })
@@ -242,7 +244,7 @@ export function BookingForm({
 
             <div className="w-28 sm:w-36">
               <TimeInput
-                label="Zeit"
+                label={t('dispatch.time')}
                 value={formData.time}
                 onChange={(value) =>
                   setFormData({ ...formData, time: value })
@@ -257,7 +259,7 @@ export function BookingForm({
             className="h-12 sm:h-14 px-4 sm:px-6 w-full sm:w-auto"
           >
             <EventRepeatIcon />
-            <span className="ml-2">Neue Serien Fahrt</span>
+            <span className="ml-2">{t('dispatch.newRecurrentTrip')}</span>
           </Button>
         </div>
 
@@ -265,7 +267,7 @@ export function BookingForm({
         <div className="flex flex-col sm:flex-row gap-2">
           <div className="flex-1">
             <TextField
-              label="Telefonnummer des Fahrgasts"
+              label={t('dispatch.passengerPhone')}
               value={formData.passengerPhone}
               onChange={(value) =>
                 setFormData({
@@ -279,7 +281,7 @@ export function BookingForm({
 
           <div className="flex-1">
             <TextField
-              label="Name des Fahrgasts"
+              label={t('dispatch.passengerName')}
               value={formData.passengerName}
               onChange={(value) =>
                 setFormData({
@@ -312,7 +314,7 @@ export function BookingForm({
         <div className="space-y-4">
           <AddressLookupField
             id="pickup"
-            label="Abholadresse"
+            label={t('dispatch.pickup')}
             value={pickupLocation}
             onChange={(location) =>
               onLocationUpdate("pickup", location)
@@ -321,7 +323,7 @@ export function BookingForm({
 
           <AddressLookupField
             id="dropoff"
-            label="Zieladresse"
+            label={t('dispatch.dropoff')}
             value={dropoffLocation}
             onChange={(location) =>
               onLocationUpdate("dropoff", location)
@@ -333,7 +335,7 @@ export function BookingForm({
         <div className="flex flex-col sm:flex-row gap-2">
           <div className="flex-1">
             <SelectField
-              label="Flotte"
+              label={t('dispatch.fleet')}
               value={formData.fleet}
               options={fleetOptions}
               onChange={(value: string | number) =>
@@ -343,13 +345,13 @@ export function BookingForm({
           </div>
           <div className="flex-1">
             <SelectField
-              label="Fahrzeug"
+              label={t('dispatch.vehicle')}
               value={formData.vehicle}
               options={vehicleOptions}
               onChange={(value: string | number) =>
                 setFormData({ ...formData, vehicle: value as string })
               }
-              placeholder="Fahrzeug auswählen"
+              placeholder={t('dispatch.vehicle')}
             />
           </div>
         </div>
@@ -367,7 +369,7 @@ export function BookingForm({
             className="flex items-center gap-2 h-14 group"
             type="button"
           >
-            <h3 className="text-[20px]">Zusätzliche Optionen</h3>
+            <h3 className="text-[20px]">{t('dispatch.additionalOptions')}</h3>
             <DropdownSelectIcon open={isAdditionalOptionsOpen} />
           </button>
 
@@ -377,7 +379,7 @@ export function BookingForm({
               <div className="flex flex-col sm:flex-row gap-2">
                 <div className="flex-1">
                   <TextField
-                    label="Fahrer-ID (optional)"
+                    label={t('dispatch.driverId')}
                     value={formData.driverId}
                     onChange={(value) =>
                       setFormData({ ...formData, driverId: value as string })
@@ -386,7 +388,7 @@ export function BookingForm({
                 </div>
                 <div className="flex-1">
                   <TextField
-                    label="Benutzerdefinierter Preis (optional)"
+                    label={t('dispatch.customPrice')}
                     value={formData.customPrice}
                     onChange={(value) =>
                       setFormData({
@@ -401,7 +403,7 @@ export function BookingForm({
               <div className="flex flex-col sm:flex-row gap-2">
                 <div className="flex-1">
                   <SelectField
-                    label="Zahlung"
+                    label={t('dispatch.payment')}
                     value={formData.payment}
                     options={paymentOptions}
                     onChange={(value: string | number) =>
@@ -412,7 +414,7 @@ export function BookingForm({
                 </div>
                 <div className="flex-1">
                   <SelectField
-                    label="Kostenstelle"
+                    label={t('dispatch.costCenter')}
                     value={formData.costCenter}
                     options={costCenterOptions}
                     onChange={(value: string | number) =>
@@ -423,7 +425,7 @@ export function BookingForm({
               </div>
 
               <TextField
-                label="Notiz für Fahrer (optional)"
+                label={t('dispatch.noteToDriver')}
                 value={formData.notes}
                 onChange={(value) =>
                   setFormData({ ...formData, notes: value as string })
@@ -431,7 +433,7 @@ export function BookingForm({
               />
 
               <TextField
-                label="Titel (optional)"
+                label={t('passenger.detailsTitle')}
                 value={formData.tripTitle}
                 onChange={(value) =>
                   setFormData({
@@ -443,7 +445,7 @@ export function BookingForm({
               />
 
               <SelectField
-                label="Mit wiederkehrender Fahrt verknüpfen (optional)"
+                label={t('passenger.recurrentTrips')}
                 value={formData.linkedRecurrentTrip}
                 onChange={(value: string | number) =>
                   setFormData({
@@ -457,14 +459,14 @@ export function BookingForm({
 
               <div className="pt-2 pb-1">
                 <h4 className="font-['Roboto_Flex:Medium',sans-serif] font-medium text-[16px] text-[var(--color-on-surface)]">
-                  Healthcare insurance information
+                  {t('passenger.healthcareInsuranceTitle')}
                 </h4>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-2">
                 <div className="flex-1">
                   <TextField
-                    label="Versicherungsgesellschaft (optional)"
+                    label={t('passenger.insuranceCompanyLabel')}
                     value={formData.insuranceCompany}
                     onChange={(value) =>
                       setFormData({
@@ -477,7 +479,7 @@ export function BookingForm({
                 </div>
                 <div className="flex-1">
                   <TextField
-                    label="Versicherungsnummer (optional)"
+                    label={t('passenger.insuranceNumber')}
                     value={formData.insuranceNumber}
                     onChange={(value) =>
                       setFormData({
@@ -502,7 +504,7 @@ export function BookingForm({
                     }
                   />
                   <span className="text-[16px] select-none">
-                    Befreiung von Zuzahlung
+                    {t('passenger.exemptFromCopayment')}
                   </span>
                 </label>
 
@@ -517,7 +519,7 @@ export function BookingForm({
                     }
                   />
                   <span className="text-[16px] select-none">
-                    M4 von Krankenkasse genehmigt
+                    {t('passenger.m4Approved')}
                   </span>
                 </label>
               </div>
@@ -531,14 +533,13 @@ export function BookingForm({
             variant="secondary"
             onClick={clearForm}
           >
-            <XCircleIcon />
-            <span className="ml-2">Formular löschen</span>
+            <span>{t('dispatch.clearForm')}</span>
           </Button>
           <Button
             onClick={createBooking}
             className="bg-[var(--color-red-50)] text-white hover:bg-[var(--color-red-40)]"
           >
-            Buchung erstellen
+            {t('dispatch.createBooking')}
           </Button>
         </div>
       </div>
