@@ -1,4 +1,8 @@
 import React from 'react';
+// @ts-expect-error - Vite handles SVG imports
+import carLocalImg from '../icons/RH Car Annotations.svg';
+// @ts-expect-error - Vite handles SVG imports
+import carFreenowImg from '../icons/RH Car Annotations FN.svg';
 
 export type MarkerType = 'pickup' | 'dropoff' | 'driver';
 export type DriverStatus = 'available' | 'in_trip' | 'approaching';
@@ -107,7 +111,7 @@ export const MapMarker: React.FC<MapMarkerProps> = ({ type, label, status, fleet
             {type === 'driver' && (
                 <div className="relative -mt-[1px]">
                     <img
-                        src={`/src/components/icons/RH Car Annotations${fleet === 'freenow' ? ' FN' : ''}.svg`}
+                        src={fleet === 'freenow' ? carFreenowImg : carLocalImg}
                         alt="car"
                         className={`w-[12px] h-auto ${fleet === 'local' ? 'rotate-90' : ''}`}
                     />
