@@ -198,7 +198,7 @@ export function BookingForm({
   const costCenterOptions = [{ value: "None", label: t('dispatch.none') }];
 
   const fleetOptions = [
-    { value: "fleet_01", label: "FreeNow Flotte" },
+    { value: "fleet_01", label: "FREENOW" },
     { value: "fleet_02", label: "Eigene Flotte" },
   ];
 
@@ -238,12 +238,6 @@ export function BookingForm({
       { value: "no_vehicles", label: t('dispatch.none') },
     ];
   }, [dropoffLocation?.address, t]);
-
-  const recurrentTripOptions = [
-    { value: "", label: "Keine" },
-    { value: "trip1", label: "Physiotherapie mit Dr. Rey" },
-    { value: "trip2", label: "Psychologe mit Dr. Morales" },
-  ];
 
   const clearForm = () => {
     setFormData({
@@ -416,7 +410,7 @@ export function BookingForm({
             }}
           />
           <span className="font-['Roboto_Flex:Medium',sans-serif] font-medium text-[16px] text-[var(--color-on-surface)]">
-            Medical trip
+            {t('dispatch.medicalTrip')}
           </span>
         </div>
 
@@ -454,13 +448,13 @@ export function BookingForm({
             }
           />
           <SelectField
-            label="Vehicle"
+            label={t('dispatch.vehicle')}
             value={formData.vehicle}
             options={vehicleOptions}
             onChange={(value: string | number) =>
               setFormData({ ...formData, vehicle: value as string })
             }
-            placeholder="Vehicle"
+            placeholder={t('dispatch.vehicle')}
           />
         </div>
 
@@ -538,31 +532,6 @@ export function BookingForm({
                 onChange={(value) =>
                   setFormData({ ...formData, notes: value as string })
                 }
-              />
-
-              <TextField
-                label={t('passenger.detailsTitle')}
-                value={formData.tripTitle}
-                onChange={(value) =>
-                  setFormData({
-                    ...formData,
-                    tripTitle: value as string,
-                  })
-                }
-                placeholder=""
-              />
-
-              <SelectField
-                label={t('passenger.recurrentTrips')}
-                value={formData.linkedRecurrentTrip}
-                onChange={(value: string | number) =>
-                  setFormData({
-                    ...formData,
-                    linkedRecurrentTrip: value as string,
-                  })
-                }
-                options={recurrentTripOptions}
-                placeholder=""
               />
 
               <div className="pt-2 pb-1">
