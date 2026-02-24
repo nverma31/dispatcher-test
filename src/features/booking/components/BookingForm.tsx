@@ -328,7 +328,10 @@ export function BookingForm({
   };
 
   return (
-    <div className="bg-[var(--color-surface-highest)] rounded-[var(--radius-card)] p-4 md:p-6 w-full lg:basis-1/2 lg:flex-[1_1_50%]">
+    <div
+      className="rounded-[var(--radius-card)] p-4 md:p-6 w-full lg:basis-1/2 lg:flex-[1_1_50%]"
+      style={{ backgroundColor: 'var(--color-sys-surface, var(--color-surface, #fcfcfc))' }}
+    >
 
       <div className="space-y-2 md:space-y-3">
         {/* Time & Date */}

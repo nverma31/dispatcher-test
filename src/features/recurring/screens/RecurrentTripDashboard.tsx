@@ -208,10 +208,17 @@ export function RecurrentTripDashboard({
         <div className="w-full max-w-[800px] mb-6">
           <button
             onClick={onBack}
-            className="bg-[#f1f1f1] h-14 px-6 rounded-[var(--radius)] flex items-center gap-2 hover:bg-[var(--color-surface-variant)] transition-colors"
+            className="h-14 px-6 rounded-[var(--radius)] flex items-center gap-2 transition-colors"
+            style={{
+              backgroundColor: 'var(--color-sys-surface-container)',
+              color: 'var(--color-sys-on-surface)',
+              fontSize: 'var(--fs-label-1, 16px)',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--color-sys-surface-variant)'; }}
+            onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'var(--color-sys-surface-container)'; }}
           >
             <ArrowLeft className="size-5" />
-            <span className="text-[16px]">
+            <span>
               {passenger
                 ? "Zurück zum Fahrgast"
                 : "Zurück zur Versand"}
@@ -220,7 +227,10 @@ export function RecurrentTripDashboard({
         </div>
 
         {/* Main Form */}
-        <div className="bg-[var(--color-surface-highest)] rounded-[24px] p-6 w-full max-w-[800px]">
+        <div
+          className="rounded-[24px] p-6 w-full max-w-[800px]"
+          style={{ backgroundColor: 'var(--color-sys-surface, var(--color-surface, #fcfcfc))' }}
+        >
           <h1 className="text-[28px] mb-6">
             Details der wiederkehrenden Fahrt festlegen
           </h1>

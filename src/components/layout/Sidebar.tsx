@@ -106,7 +106,10 @@ export function Sidebar({ currentPage, onNavigate }: SidebarProps) {
   const isPassengersActive = currentPage === 'passengers' || currentPage === 'passenger-details' || currentPage === 'recurrent-trip-details';
 
   return (
-    <div className="bg-[var(--color-surface-highest)] box-border content-stretch flex flex-col gap-[32px] items-center pb-[32px] pt-[16px] px-0 relative rounded-br-[var(--radius-card)] rounded-tr-[var(--radius-card)] h-full w-[128px]">
+    <div
+      className="box-border content-stretch flex flex-col gap-[32px] items-center pb-[32px] pt-[16px] px-0 relative rounded-br-[var(--radius-card)] rounded-tr-[var(--radius-card)] h-full w-[128px]"
+      style={{ backgroundColor: 'var(--color-sys-surface, var(--color-surface, #fcfcfc))' }}
+    >
       {/* Logo */}
       <div className="box-border content-stretch flex gap-[10px] items-start justify-center px-0 py-[16px] relative shrink-0 w-full">
         <FreenowLogo />
