@@ -93,14 +93,7 @@ export function RecurrentTripDashboard({
     new Date(2025, 1, 1),
   ); // February 2025
   const [selectedSpecificDates, setSelectedSpecificDates] =
-    useState<Date[]>([
-      new Date(2025, 1, 17), // Feb 17
-      new Date(2025, 1, 22), // Feb 22
-      new Date(2025, 1, 25), // Feb 25
-      new Date(2025, 2, 17), // Mar 17
-      new Date(2025, 2, 22), // Mar 22
-      new Date(2025, 2, 25), // Mar 25
-    ]);
+    useState<Date[]>([]);
   const [specificDateTimes, setSpecificDateTimes] = useState<{
     [key: string]: { pickup: string; return: string };
   }>({});
@@ -521,12 +514,16 @@ export function RecurrentTripDashboard({
               onClick={() => setRecurrenceTab("specific")}
             >
               <p
-                className={`text-[14px] leading-[20px] ${recurrenceTab === "specific" ? "font-semibold text-[#790518]" : "text-[#5e5e5e]"}`}
+                className="text-[14px] leading-[20px]"
+                style={{
+                  fontWeight: recurrenceTab === "specific" ? 600 : 400,
+                  color: recurrenceTab === "specific" ? 'var(--color-primary)' : 'var(--color-sys-on-surface-variant)'
+                }}
               >
                 Set specific dates and times
               </p>
               {recurrenceTab === "specific" && (
-                <div className="bg-[#790518] h-[3px] rounded-[12px] shrink-0 w-full" />
+                <div className="h-[3px] rounded-[12px] shrink-0 w-full" style={{ backgroundColor: 'var(--color-primary)' }} />
               )}
             </div>
             <div
@@ -534,12 +531,16 @@ export function RecurrentTripDashboard({
               onClick={() => setRecurrenceTab("weekly")}
             >
               <p
-                className={`text-[14px] leading-[20px] ${recurrenceTab === "weekly" ? "font-semibold text-[#790518]" : "text-[#5e5e5e]"}`}
+                className="text-[14px] leading-[20px]"
+                style={{
+                  fontWeight: recurrenceTab === "weekly" ? 600 : 400,
+                  color: recurrenceTab === "weekly" ? 'var(--color-primary)' : 'var(--color-sys-on-surface-variant)'
+                }}
               >
                 Set weekly schedule
               </p>
               {recurrenceTab === "weekly" && (
-                <div className="bg-[#790518] h-[3px] rounded-[12px] shrink-0 w-full" />
+                <div className="h-[3px] rounded-[12px] shrink-0 w-full" style={{ backgroundColor: 'var(--color-primary)' }} />
               )}
             </div>
           </div>
@@ -562,7 +563,7 @@ export function RecurrentTripDashboard({
                     )
                   }
                 >
-                  <ChevronLeft className="size-6 text-[#675b5b]" />
+                  <ChevronLeft className="size-6" style={{ color: 'var(--color-sys-on-surface-variant)' }} />
                 </div>
 
                 {/* Two Months Side by Side */}
@@ -593,7 +594,7 @@ export function RecurrentTripDashboard({
                       >
                         {/* Month Header */}
                         <div className="absolute top-0 left-0 right-0 pb-3">
-                          <p className="text-[16px] leading-[24px] text-[#1e1a1a] text-center">
+                          <p className="text-[16px] leading-[24px] text-center" style={{ color: 'var(--color-sys-on-surface)' }}>
                             {
                               monthNames[
                               displayMonth.getMonth()
@@ -610,7 +611,7 @@ export function RecurrentTripDashboard({
                               key={day}
                               className="flex items-center justify-center pb-1"
                             >
-                              <p className="text-[16px] leading-[24px] text-[#1e1a1a] text-center">
+                              <p className="text-[16px] leading-[24px] text-center" style={{ color: 'var(--color-sys-on-surface)' }}>
                                 {day}
                               </p>
                             </div>
@@ -680,13 +681,23 @@ export function RecurrentTripDashboard({
                                     );
                                   }
                                 }}
-                                className={`
-                                  p-[6px] cursor-pointer flex items-center justify-center
-                                  ${isSelected ? "bg-[#f8ecee] rounded-[12px]" : "hover:bg-[#f1f1f1] rounded-[12px]"}
-                                `}
+                                className="p-[6px] cursor-pointer flex items-center justify-center rounded-[12px] transition-colors"
+                                style={{
+                                  backgroundColor: isSelected ? 'var(--color-sys-on-surface)' : 'transparent',
+                                }}
+                                onMouseEnter={e => {
+                                  if (!isSelected) e.currentTarget.style.backgroundColor = 'var(--color-sys-surface-container)';
+                                }}
+                                onMouseLeave={e => {
+                                  if (!isSelected) e.currentTarget.style.backgroundColor = 'transparent';
+                                }}
                               >
                                 <p
-                                  className={`text-[14px] leading-[20px] ${isSelected ? "text-[#1a4a1d]" : "text-[#1e1a1a]"}`}
+                                  className="text-[14px] leading-[20px]"
+                                  style={{
+                                    color: isSelected ? 'var(--color-sys-surface)' : 'var(--color-sys-on-surface)',
+                                    fontWeight: isSelected ? 600 : 400
+                                  }}
                                 >
                                   {day
                                     .toString()
@@ -714,14 +725,14 @@ export function RecurrentTripDashboard({
                     )
                   }
                 >
-                  <ChevronRight className="size-6 text-[#675b5b]" />
+                  <ChevronRight className="size-6" style={{ color: 'var(--color-sys-on-surface-variant)' }} />
                 </div>
               </div>
 
               {/* Set Pickup Times */}
               {selectedSpecificDates.length > 0 && (
                 <div className="mt-8">
-                  <h4 className="text-[16px] mb-4">
+                  <h4 className="text-[16px] mb-4" style={{ color: 'var(--color-sys-on-surface)' }}>
                     Set pickup times
                   </h4>
 
@@ -729,10 +740,10 @@ export function RecurrentTripDashboard({
                   <div className="content-stretch flex gap-[16px] items-center relative shrink-0 w-full mb-4">
                     <div className="w-[121px]" />
                     <div className="w-[144px]">
-                      <p className="text-[16px]">Pickup at</p>
+                      <p className="text-[16px]" style={{ color: 'var(--color-sys-on-surface-variant)' }}>Pickup at</p>
                     </div>
                     <div className="w-[144px]">
-                      <p className="text-[16px]">
+                      <p className="text-[16px]" style={{ color: 'var(--color-sys-on-surface-variant)' }}>
                         Return at (optional)
                       </p>
                     </div>
@@ -779,7 +790,7 @@ export function RecurrentTripDashboard({
                           className="content-stretch flex gap-[16px] items-center relative shrink-0"
                         >
                           <div className="w-[121px]">
-                            <p className="text-[16px]">
+                            <p className="text-[16px]" style={{ color: 'var(--color-sys-on-surface)' }}>
                               {dayName}, {monthName} {dayNum}
                             </p>
                           </div>
@@ -801,7 +812,7 @@ export function RecurrentTripDashboard({
                                 })
                               }
                               leadingIcon={
-                                <Clock className="size-6 text-[#5e5e5e]" />
+                                <Clock className="size-6" style={{ color: 'var(--color-sys-on-surface-variant)' }} />
                               }
                             />
                           </div>
@@ -823,7 +834,7 @@ export function RecurrentTripDashboard({
                                 })
                               }
                               leadingIcon={
-                                <Clock className="size-6 text-[#5e5e5e]" />
+                                <Clock className="size-6" style={{ color: 'var(--color-sys-on-surface-variant)' }} />
                               }
                             />
                           </div>
@@ -996,15 +1007,25 @@ export function RecurrentTripDashboard({
           <div className="flex gap-8 items-center justify-end mt-6">
             <button
               onClick={onBack}
-              className="bg-[#f1f1f1] h-[56px] px-6 rounded-[var(--radius)] flex items-center hover:bg-[var(--color-surface-variant)] transition-colors"
+              className="h-[56px] px-6 rounded-[var(--radius)] flex items-center transition-colors"
+              style={{
+                backgroundColor: 'var(--color-sys-surface-container)',
+                color: 'var(--color-sys-on-surface)',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'var(--color-sys-surface-variant)'; }}
+              onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'var(--color-sys-surface-container)'; }}
             >
               <span className="text-[16px]">Cancel</span>
             </button>
             <button
               onClick={handleSave}
-              className="bg-[#e80046] h-[56px] px-6 rounded-[var(--radius)] flex items-center text-white hover:bg-[#d00040] transition-colors"
+              className="h-[56px] px-6 rounded-[var(--radius)] flex items-center transition-colors"
+              style={{
+                backgroundColor: 'var(--color-sys-brand, #e80046)',
+                color: 'var(--color-sys-on-brand, #ffffff)'
+              }}
             >
-              <span className="text-[16px]">
+              <span className="text-[16px] font-medium font-sans">
                 Create recurrent trip
               </span>
             </button>
