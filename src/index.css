@@ -388,7 +388,9 @@
     --color-sys-on-surface: #fcfcfc;
 
     /* Custom Figma Overrides for Dark Mode */
+    --background: var(--color-sys-background);
     --surface: var(--color-sys-surface);
+    --app-background: var(--color-sys-background);
   }
 }
 
