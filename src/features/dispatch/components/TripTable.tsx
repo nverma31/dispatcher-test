@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { experimental } from '@freenow/wave';
-import { Search, X, Calendar as CalendarIcon } from 'lucide-react';
+import { X } from 'lucide-react';
 import { format, parse, isValid, addDays } from 'date-fns';
 import { Trip } from '../../booking/types';
 
@@ -42,7 +42,7 @@ function StatusBadge({ status }: { status: string }) {
     'In Progress': { bg: 'var(--palette-marooned-95)', color: 'var(--palette-marooned-20)' },
     Arrived: { bg: 'var(--palette-marooned-95)', color: 'var(--palette-marooned-20)' },
     Approach: { bg: 'var(--palette-yellow-95)', color: 'var(--palette-yellow-20)' },
-    Pending: { bg: 'var(--palette-neutral-95)', color: 'var(--color-sys-on-surface)' },
+    Pending: { bg: 'var(--palette-neutral-95)', color: 'var(--palette-neutral-20)' },
     Completed: { bg: 'var(--palette-green-95)', color: 'var(--palette-green-20)' },
     'Completed by FREENOW': { bg: 'var(--palette-green-95)', color: 'var(--palette-green-20)' },
     Cancelled: { bg: 'var(--color-sys-negative)', color: 'var(--color-sys-on-accent)' },

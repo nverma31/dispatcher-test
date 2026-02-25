@@ -74,7 +74,7 @@ export function BookingForm({
   const [formData, setFormData] = useState({
     date: "13/09/2025",
     time: "18:17",
-    passengerPhone: "",
+    passengerPhone: "+49 176567234",
     passengerName: "",
     pickup: "",
     dropoff: "",
@@ -243,7 +243,7 @@ export function BookingForm({
     setFormData({
       date: "Today",
       time: "Now",
-      passengerPhone: "",
+      passengerPhone: "+49 176567234",
       passengerName: "",
       pickup: "",
       dropoff: "",
